@@ -65,7 +65,7 @@ unit_parseBrackets = do
   testParserBracketsSuccess parser "1+(2+3)+4" "(1+(2+3))+4"
   testParserBracketsSuccess parser "1+2+(3+4)" "(1+2)+(3+4)"
   testParserBracketsSuccess parser "1+(2+3+4)" "1+((2+3)+4)"
-  testParserBracketsSuccess parser "1+2-3+3" "((1+2)-3)+4"
+  testParserBracketsSuccess parser "1+2-3+4" "((1+2)-3)+4"
   testParserBracketsSuccess parser "1+2*3^4" "1+(2*(3^4))"
   testParserBracketsSuccess parser "1*2/3*4" "((1*2)/3)*4"
   testParserBracketsSuccess parser "1^2^3^4" "1^(2^(3^4))"
