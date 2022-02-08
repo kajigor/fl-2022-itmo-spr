@@ -1,8 +1,10 @@
 module Parser where
 
-import Text.Printf (printf)
-import Control.Applicative ((<|>))
-import Data.Char (isDigit, digitToInt)
+import           Control.Applicative            ( (<|>) )
+import           Data.Char                      ( digitToInt
+                                                , isDigit
+                                                )
+import           Text.Printf                    ( printf )
 
 data Operator = Plus
               | Mult
@@ -17,30 +19,29 @@ toOp '*' = Mult
 toOp '^' = Pow
 toOp '-' = Minus
 toOp '/' = Div
-toOp c = error $ printf "Unsupported operator: %c" c
+toOp c   = error $ printf "Unsupported operator: %c" c
 
 data Expr = BinOp Operator Expr Expr
           | Num Int
           deriving (Show, Eq)
 
 eval :: Expr -> Int
-eval (BinOp Plus l r) = eval l + eval r
+eval (BinOp Plus  l r) = eval l + eval r
 eval (BinOp Minus l r) = eval l - eval r
-eval (BinOp Mult l r) = eval l * eval r
-eval (BinOp Div l r) = eval l `div` eval r
-eval (BinOp Pow l r) = eval l ^ eval r
-eval (Num x) = x
+eval (BinOp Mult  l r) = eval l * eval r
+eval (BinOp Div   l r) = eval l `div` eval r
+eval (BinOp Pow   l r) = eval l ^ eval r
+eval (Num x          ) = x
 
 data ParserType = Prefix | Infix deriving (Show)
 
 parse :: ParserType -> String -> Maybe Expr
-parse pType str =
-    case go pType str of
-      Just ("", e) -> Just e
-      _ -> Nothing
-  where
-    go Prefix = parsePrefix
-    go Infix  = parseInfix
+parse pType str = case go pType str of
+  Just ("", e) -> Just e
+  _            -> Nothing
+ where
+  go Prefix = parsePrefix
+  go Infix  = parseInfix
 
 -- Expr :: + Expr Expr
 --       | * Expr Expr
