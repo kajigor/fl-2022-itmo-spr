@@ -1,8 +1,10 @@
 module Parser where
 
-import Text.Printf (printf)
-import Control.Applicative ((<|>))
-import Data.Char (isDigit, digitToInt)
+import           Control.Applicative            ( (<|>) )
+import           Data.Char                      ( digitToInt
+                                                , isDigit
+                                                )
+import           Text.Printf                    ( printf )
 
 data Operator = Plus
               | Mult
@@ -17,47 +19,43 @@ toOp '*' = Mult
 toOp '^' = Pow
 toOp '-' = Minus
 toOp '/' = Div
-toOp c = error $ printf "Unsupported operator: %c" c
+toOp c   = error $ printf "Unsupported operator: %c" c
 
 data Expr = BinOp Operator Expr Expr
           | Num Int
           deriving (Show, Eq)
 
 eval :: Expr -> Int
-eval (BinOp Plus l r) = eval l + eval r
+eval (BinOp Plus  l r) = eval l + eval r
 eval (BinOp Minus l r) = eval l - eval r
-eval (BinOp Mult l r) = eval l * eval r
-eval (BinOp Div l r) = eval l `div` eval r
-eval (BinOp Pow l r) = eval l ^ eval r
-eval (Num x) = x
+eval (BinOp Mult  l r) = eval l * eval r
+eval (BinOp Div   l r) = eval l `div` eval r
+eval (BinOp Pow   l r) = eval l ^ eval r
+eval (Num x          ) = x
 
 data ParserType = Prefix | Infix deriving (Show)
 
 parse :: ParserType -> String -> Maybe Expr
-parse pType str =
-    case go pType str of
-      Just ("", e) -> Just e
-      _ -> Nothing
-  where
-    go Prefix = parsePrefix
-    go Infix  = parseInfix
+parse pType str = case go pType str of
+  Just ("", e) -> Just e
+  _            -> Nothing
+ where
+  go Prefix = parsePrefix
+  go Infix  = parseInfix
 
 -- Expr :: + Expr Expr
 --       | * Expr Expr
 --       | Digit
 -- +1*234 -> Just ("4", ...)
 parsePrefix :: String -> Maybe (String, Expr)
-parsePrefix (op : t) | op == '+' || op == '*' =
-  case parsePrefix t of
-    Just (t', l) ->
-      case parsePrefix t' of
-        Just (t'', r) -> Just (t'', BinOp (toOp op) l r)
-        Nothing -> Nothing
-    Nothing -> Nothing
-parsePrefix (d : t) | isDigit d =
-  Just (t, Num (digitToInt d))
-parsePrefix _ = Nothing
-
+parsePrefix [] = Nothing
+parsePrefix (op : t)
+  | op == '+' || op == '*' || op == '-' || op == '*' || op == '^' = do
+    (t' , l) <- parsePrefix t
+    (t'', r) <- parsePrefix t'
+    return (t'', BinOp (toOp op) l r)
+  | isDigit op = Just (t, Num (digitToInt op))
+  | otherwise = Nothing
 -- Expr :: Expr - Expr
 --       | Expr * Expr
 --       | Digit
@@ -66,52 +64,42 @@ parsePrefix _ = Nothing
 -- Слаг :: Множ (* Множ) * ... (* Множ) -> [Expr]
 -- Множ :: Цифра | Выражение в скобках
 parseInfix :: String -> Maybe (String, Expr)
-parseInfix = parseSum
+parseInfix = parseLvl1
 
-parseSum :: String -> Maybe (String, Expr)
-parseSum str =
-    (binOp Plus <$>) <$> go str
-  where
-    go :: String -> Maybe (String, [Expr])
-    go str =
-      let first = parseMult str in
-      case first of
-        Nothing -> Nothing
-        Just (t, e) ->
-          if null t
-          then Just ("", [e])
-          else
-            case parsePlus t of
-              Just (t', _) ->
-                let rest = go t' in
-                ((e:) <$>) <$> rest
-              Nothing -> Just (t, [e])
+data Associativity = LeftAcc | RightAcc deriving (Eq)
 
-parseMult :: String -> Maybe (String, Expr)
-parseMult str =
-    (binOp Mult <$>) <$> go str
-  where
-    go :: String -> Maybe (String, [Expr])
-    go str =
-      let first = parseDigit str <|> parseExprBr str  in
-      case first of
-        Nothing -> Nothing
-        Just (t, e) ->
-          if null t
-          then Just ("", [e])
-          else
-            case parseStar t of
-              Just (t', _) ->
-                let rest = go t' in
-                ((e:) <$>) <$> rest
-              Nothing -> Just (t, [e])
+parseLvl
+  :: [String -> Maybe (String, Operator)]
+  -> [String -> Maybe (String, Expr)]
+  -> Associativity
+  -> String
+  -> Maybe (String, Expr)
+parseLvl fops hops acc str | acc == LeftAcc = go str >>= g
+                           | otherwise      = go str >>= g'
+ where
+  go :: String -> Maybe (String, [(Maybe Operator, Expr)])
+  go str = foldl (\a x -> a <|> x str) Nothing hops >>= f
 
+  f ("", e) = Just ("", [(Nothing, e)])
+  f (t, e) =
+    let make (t', op) = (((Just op, e) :) <$>) <$> go t'
+    in  (foldl (\a x -> a <|> x t) Nothing fops >>= make)
+          <|> return (t, [(Nothing, e)])
+
+  g' (t, xs) = return (t, snd (foldr1 h xs))
+  g (t, xs) = return (t, snd (foldl1 h xs))
+  h (Just op, e) (ops, e') = (ops, BinOp op e e')
+  h _            _         = undefined
+
+
+parseLvl3 = parseLvl [parsePow] [parseDigit, parseExprBr] RightAcc
+parseLvl2 = parseLvl [parseStar, parseDiv] [parseLvl3] LeftAcc
+parseLvl1 = parseLvl [parsePlus, parseMinus] [parseLvl2] LeftAcc
 
 parseExprBr :: String -> Maybe (String, Expr)
-parseExprBr ('(' : t) =
-  case parseSum t of
-    Just ((')' : t'), e) -> Just (t', e)
-    _ -> Nothing
+parseExprBr ('(' : t) = case parseLvl1 t of
+  Just (')' : t', e) -> Just (t', e)
+  _                  -> Nothing
 parseExprBr _ = Nothing
 
 binOp :: Operator -> [Expr] -> Expr
@@ -119,17 +107,27 @@ binOp op = foldl1 (BinOp op)
 
 parsePlus :: String -> Maybe (String, Operator)
 parsePlus ('+' : t) = Just (t, Plus)
-parsePlus _ = Nothing
+parsePlus _         = Nothing
+
+parseMinus :: String -> Maybe (String, Operator)
+parseMinus ('-' : t) = Just (t, Minus)
+parseMinus _         = Nothing
 
 parseStar :: String -> Maybe (String, Operator)
 parseStar ('*' : t) = Just (t, Mult)
-parseStar _ = Nothing
+parseStar _         = Nothing
+
+parseDiv :: String -> Maybe (String, Operator)
+parseDiv ('/' : t) = Just (t, Div)
+parseDiv _         = Nothing
+
+parsePow :: String -> Maybe (String, Operator)
+parsePow ('^' : t) = Just (t, Pow)
+parsePow _         = Nothing
 
 parseDigit :: String -> Maybe (String, Expr)
-parseDigit (d : t) | isDigit d =
-  Just (t, Num (digitToInt d))
-parseDigit _ = Nothing
-
+parseDigit (d : t) | isDigit d = Just (t, Num (digitToInt d))
+parseDigit _                   = Nothing
 
 plus :: Expr -> Expr -> Expr
 plus = BinOp Plus
