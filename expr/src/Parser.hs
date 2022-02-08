@@ -13,7 +13,7 @@ data Operator = Plus
               | Pow
               deriving (Show, Eq)
 
-type Parser a = String -> Maybe (String, a)
+type ParserF a = String -> Maybe (String, a)
 
 toOp :: Char -> Operator
 toOp '+' = Plus
@@ -49,7 +49,7 @@ parse pType str = case go pType str of
 --       | * Expr Expr
 --       | Digit
 -- +1*234 -> Just ("4", ...)
-parsePrefix :: Parser Expr
+parsePrefix :: ParserF Expr
 parsePrefix [] = Nothing
 parsePrefix (op : t)
   | op == '+' || op == '*' || op == '-' || op == '*' || op == '^' = do
@@ -65,14 +65,14 @@ parsePrefix (op : t)
 -- Expr :: Слаг + Слаг + ... + Слаг
 -- Слаг :: Множ (* Множ) * ... (* Множ) -> [Expr]
 -- Множ :: Цифра | Выражение в скобках
-parseInfix :: Parser Expr
+parseInfix :: ParserF Expr
 parseInfix = parseLvl1
 
 data Associativity = LeftAcc | RightAcc deriving (Eq)
 
 parseLvl
-  :: [Parser Operator]
-  -> [Parser Expr]
+  :: [ParserF Operator]
+  -> [ParserF Expr]
   -> Associativity
   -> String
   -> Maybe (String, Expr)
@@ -94,16 +94,16 @@ parseLvl fops hops acc str | acc == LeftAcc = go str >>= g
   h _            _         = undefined
 
 
-parseLvl3 :: Parser Expr
+parseLvl3 :: ParserF Expr
 parseLvl3 = parseLvl [parsePow] [parseDigit, parseExprBr] RightAcc
 
-parseLvl2 :: Parser Expr
+parseLvl2 :: ParserF Expr
 parseLvl2 = parseLvl [parseStar, parseDiv] [parseLvl3] LeftAcc
 
-parseLvl1 :: Parser Expr
+parseLvl1 :: ParserF Expr
 parseLvl1 = parseLvl [parsePlus, parseMinus] [parseLvl2] LeftAcc
 
-parseExprBr :: Parser Expr
+parseExprBr :: ParserF Expr
 parseExprBr ('(' : t) = case parseLvl1 t of
   Just (')' : t', e) -> Just (t', e)
   _                  -> Nothing
@@ -112,27 +112,27 @@ parseExprBr _ = Nothing
 binOp :: Operator -> [Expr] -> Expr
 binOp op = foldl1 (BinOp op)
 
-parsePlus :: Parser Operator
+parsePlus :: ParserF Operator
 parsePlus ('+' : t) = Just (t, Plus)
 parsePlus _         = Nothing
 
-parseMinus :: Parser Operator
+parseMinus :: ParserF Operator
 parseMinus ('-' : t) = Just (t, Minus)
 parseMinus _         = Nothing
 
-parseStar :: Parser Operator
+parseStar :: ParserF Operator
 parseStar ('*' : t) = Just (t, Mult)
 parseStar _         = Nothing
 
-parseDiv :: Parser Operator
+parseDiv :: ParserF Operator
 parseDiv ('/' : t) = Just (t, Div)
 parseDiv _         = Nothing
 
-parsePow :: Parser Operator
+parsePow :: ParserF Operator
 parsePow ('^' : t) = Just (t, Pow)
 parsePow _         = Nothing
 
-parseDigit :: Parser Expr
+parseDigit :: ParserF Expr
 parseDigit (d : t) | isDigit d = Just (t, Num (digitToInt d))
 parseDigit _                   = Nothing
 
