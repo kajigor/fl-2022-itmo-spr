@@ -67,44 +67,10 @@ parseInfix :: String -> Maybe (String, Expr)
 parseInfix = parseSum
 
 parseSum :: String -> Maybe (String, Expr)
-parseSum str =
-  let f = foldl1
-        (\(e1, mop1) (e2, mop2) -> case mop1 of
-          Just op1 -> (BinOp op1 e1 e2, mop2)
-          Nothing  -> (e1, mop1)
-        )
-  in  (fmap . fmap) (fst . f) (go str)
- where
-  go :: String -> Maybe (String, [(Expr, Maybe Operator)])
-  go str =
-    let first = parseMult str
-    in  case first of
-          Just ("", e) -> Just ("", [(e, Nothing)])
-          Just (t , e) -> case parsePlus t <|> parseMinus t of
-            Just (t', op) ->
-              let rest = go t' in fmap (((e, Just op) :) <$>) rest
-            Nothing -> Just (t, [(e, Nothing)])
-          _ -> Nothing
+parseSum = genericParser parseMult (\s -> parsePlus s <|> parseMinus s)
 
 parseMult :: String -> Maybe (String, Expr)
-parseMult str =
-  let f = foldl1
-        (\(e1, mop1) (e2, mop2) -> case mop1 of
-          Just op1 -> (BinOp op1 e1 e2, mop2)
-          Nothing  -> (e1, mop1)
-        )
-  in  (fmap . fmap) (fst . f) (go str)
- where
-  go :: String -> Maybe (String, [(Expr, Maybe Operator)])
-  go str =
-    let first = parsePower str
-    in  case first of
-          Just ("", e) -> Just ("", [(e, Nothing)])
-          Just (t , e) -> case parseStar t <|> parseDiv t of
-            Just (t', op) ->
-              let rest = go t' in fmap (((e, Just op) :) <$>) rest
-            Nothing -> Just (t, [(e, Nothing)])
-          _ -> Nothing
+parseMult = genericParser parsePower (\s -> parseStar s <|> parseDiv s)
 
 parsePower :: String -> Maybe (String, Expr)
 parsePower str =
@@ -116,6 +82,30 @@ parsePower str =
           Nothing         -> Just (rest, e)
         _ -> Nothing
 
+
+genericParser
+  :: (String -> Maybe (String, Expr))
+  -> (String -> Maybe (String, Operator))
+  -> String
+  -> Maybe (String, Expr)
+genericParser f g s =
+  let f = foldl1
+        (\(e1, mop1) (e2, mop2) -> case mop1 of
+          Just op1 -> (BinOp op1 e1 e2, mop2)
+          Nothing  -> (e1, mop1)
+        )
+  in  (fmap . fmap) (fst . f) (go s)
+ where
+  go :: String -> Maybe (String, [(Expr, Maybe Operator)])
+  go str =
+    let first = f str
+    in  case first of
+          Just (""  , e) -> Just ("", [(e, Nothing)])
+          Just (rest, e) -> case g rest of
+            Just (rest', op) -> (fmap . fmap) ((e, Just op) :) (go rest')
+            Nothing          -> Just (rest, [(e, Nothing)])
+          _ -> Nothing
+
 parseExprBr :: String -> Maybe (String, Expr)
 parseExprBr ('(' : t) = case parseSum t of
   Just (')' : t', e) -> Just (t', e)
@@ -126,29 +116,26 @@ binOp :: Operator -> [Expr] -> Expr
 binOp op = foldl1 (BinOp op)
 
 parsePlus :: String -> Maybe (String, Operator)
-parsePlus ('+' : t) = Just (t, Plus)
-parsePlus _         = Nothing
+parsePlus = parseSymbol (const Plus) (== '+')
 
 parseStar :: String -> Maybe (String, Operator)
-parseStar ('*' : t) = Just (t, Mult)
-parseStar _         = Nothing
+parseStar = parseSymbol (const Mult) (== '*')
 
 parseMinus :: String -> Maybe (String, Operator)
-parseMinus ('-' : rest) = Just (rest, Minus)
-parseMinus _            = Nothing
+parseMinus = parseSymbol (const Minus) (== '-')
 
 parseDiv :: String -> Maybe (String, Operator)
-parseDiv ('/' : rest) = Just (rest, Div)
-parseDiv _            = Nothing
+parseDiv = parseSymbol (const Div) (== '/')
 
 parsePow :: String -> Maybe (String, Operator)
-parsePow ('^' : rest) = Just (rest, Pow)
-parsePow _            = Nothing
+parsePow = parseSymbol (const Pow) (== '^')
 
 parseDigit :: String -> Maybe (String, Expr)
-parseDigit (d : t) | isDigit d = Just (t, Num (digitToInt d))
-parseDigit _                   = Nothing
+parseDigit = parseSymbol (Num . digitToInt) isDigit
 
+parseSymbol :: (Char -> a) -> (Char -> Bool) -> String -> Maybe (String, a)
+parseSymbol f p (c : s) | p c = Just (s, f c)
+parseSymbol _ _ _             = Nothing
 
 plus :: Expr -> Expr -> Expr
 plus = BinOp Plus
