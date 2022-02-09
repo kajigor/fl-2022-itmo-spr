@@ -97,7 +97,7 @@ parseMult str =
  where
   go :: String -> Maybe (String, [(Expr, Maybe Operator)])
   go str =
-    let first = parseDigit str <|> parseExprBr str
+    let first = parsePower str
     in  case first of
           Just ("", e) -> Just ("", [(e, Nothing)])
           Just (t , e) -> case parseStar t <|> parseDiv t of
@@ -105,6 +105,16 @@ parseMult str =
               let rest = go t' in fmap (((e, Just op) :) <$>) rest
             Nothing -> Just (t, [(e, Nothing)])
           _ -> Nothing
+
+parsePower :: String -> Maybe (String, Expr)
+parsePower str =
+  let first = parseDigit str <|> parseExprBr str
+  in  case first of
+        Just (""  , e) -> Just ("", e)
+        Just (rest, e) -> case parsePow rest of
+          Just (rest', _) -> (fmap . fmap) (pow e) (parsePower rest')
+          Nothing         -> Just (rest, e)
+        _ -> Nothing
 
 parseExprBr :: String -> Maybe (String, Expr)
 parseExprBr ('(' : t) = case parseSum t of
@@ -131,6 +141,10 @@ parseDiv :: String -> Maybe (String, Operator)
 parseDiv ('/' : rest) = Just (rest, Div)
 parseDiv _            = Nothing
 
+parsePow :: String -> Maybe (String, Operator)
+parsePow ('^' : rest) = Just (rest, Pow)
+parsePow _            = Nothing
+
 parseDigit :: String -> Maybe (String, Expr)
 parseDigit (d : t) | isDigit d = Just (t, Num (digitToInt d))
 parseDigit _                   = Nothing
@@ -152,4 +166,4 @@ divide :: Expr -> Expr -> Expr
 divide = BinOp Div
 
 isOperation :: Char -> Bool
-isOperation c = c == '+' || c == '/' || c == '-' || c == '*'
+isOperation c = c == '+' || c == '/' || c == '-' || c == '*' || c == '^'
