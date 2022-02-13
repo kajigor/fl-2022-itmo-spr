@@ -50,13 +50,10 @@ parse pType str =
 --       | Digit
 -- +1*234 -> Just ("4", ...)
 parsePrefix :: String -> Maybe (String, Expr)
-parsePrefix (op : t) | op == '+' || op == '*' || op == '-' || op == '/' || op == '^' =
-  case parsePrefix t of
-    Just (t', l) ->
-      case parsePrefix t' of
-        Just (t'', r) -> Just (t'', BinOp (toOp op) l r)
-        Nothing -> Nothing
-    Nothing -> Nothing
+parsePrefix (op : t) | op `elem` "+-*/^" = do
+  (t', l) <- parsePrefix t
+  (t'', r) <- parsePrefix t'
+  return $ (t'', BinOp (toOp op) l r)
 parsePrefix (d : t) | isDigit d =
   Just (t, Num (digitToInt d))
 parsePrefix _ = Nothing
@@ -80,60 +77,37 @@ parseSum str =
     (binOp <$>) <$> go str undefined
   where
     go :: String -> Operator -> Maybe (String, [(Operator, Expr)])
-    go str op =
-      let first = parseMult str in
-      case first of
-        Nothing -> Nothing
-        Just (t, e) ->
-          if null t
-          then Just ("", [(op, e)])
-          else
-            case parsePlus t <|> parseMinus t of
-              Just (t', op') ->
-                let rest = go t' op' in
-                (((op, e):) <$>) <$> rest
-              Nothing -> Just (t, [(op, e)])
-
+    go str op = do
+      (t, e) <- parseMult str
+      let maybeOp = parsePlus t <|> parseMinus t
+      rest <- (maybeOp >>= uncurry go) <|> Just (t, [])
+      return $ ((op, e):) <$> rest
+      
 parseMult :: String -> Maybe (String, Expr)
 parseMult str =
     (binOp <$>) <$> go str undefined
   where
     go :: String -> Operator -> Maybe (String, [(Operator, Expr)])
-    go str op =
-      let first = parsePow str  in
-      case first of
-        Nothing -> Nothing
-        Just (t, e) ->
-          if null t
-          then Just ("", [(op, e)])
-          else
-            case parseStar t <|> parseSlash t of
-              Just (t', op') ->
-                let rest = go t' op' in
-                (((op, e):) <$>) <$> rest
-              Nothing -> Just (t, [(op, e)])
+    go str op = do
+      (t, e) <- parsePow str
+      let maybeOp = parseStar t <|> parseSlash t
+      rest <- (maybeOp >>= uncurry go) <|> Just (t, [])
+      return $ ((op, e):) <$> rest
 
 parsePow :: String -> Maybe (String, Expr)
-parsePow str =
-    let first = parseDigit str <|> parseExprBr str  in
-    case first of
-      Nothing -> Nothing
-      Just (t, e) ->
-        if null t
-        then Just ("", e)
-        else
-          case parseCap t of
-            Just (t', op) ->
-              let rest = parsePow t' in
-              ((BinOp op e) <$>) <$> rest
-            Nothing -> Just (t, e)
+parsePow str = do
+    (t, e) <- parseDigit str <|> parseExprBr str
+    case parseCap t of
+      Just (t', op) ->
+        let rest = parsePow t' in
+        ((BinOp op e) <$>) <$> rest
+      Nothing -> Just (t, e)
 
 
 parseExprBr :: String -> Maybe (String, Expr)
-parseExprBr ('(' : t) =
-  case parseSum t of
-    Just ((')' : t'), e) -> Just (t', e)
-    _ -> Nothing
+parseExprBr ('(' : t) = do
+   ((')' : t'), e) <- parseSum t
+   return (t' ,e)
 parseExprBr _ = Nothing
 
 binOp :: [(Operator, Expr)] -> Expr
