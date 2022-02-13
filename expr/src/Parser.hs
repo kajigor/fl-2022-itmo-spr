@@ -47,7 +47,7 @@ parse pType str =
 --       | Digit
 -- +1*234 -> Just ("4", ...)
 parsePrefix :: String -> Maybe (String, Expr)
-parsePrefix (op : t) | op == '+' || op == '*' =
+parsePrefix (op : t) | op == '+' || op == '*' || op == '^' || op == '-' || op == '/' =
   case parsePrefix t of
     Just (t', l) ->
       case parsePrefix t' of
@@ -68,44 +68,41 @@ parsePrefix _ = Nothing
 parseInfix :: String -> Maybe (String, Expr)
 parseInfix = parseSum
 
-parseSum :: String -> Maybe (String, Expr)
-parseSum str =
-    (binOp Plus <$>) <$> go str
+parseExpr :: Bool
+     -> Operator
+     -> (String -> Maybe (String, Expr))
+     -> (String -> Maybe (String, Operator))
+     -> String
+     -> Maybe (String, Expr)
+parseExpr isLeft op fst snd str =
+    (binOp op <$>) <$> go str
   where
+    binOp :: Operator -> [Expr] -> Expr
+    binOp | isLeft    = binOpL
+          | otherwise = binOpR
     go :: String -> Maybe (String, [Expr])
     go str =
-      let first = parseMult str in
+      let first = fst str in
       case first of
         Nothing -> Nothing
         Just (t, e) ->
           if null t
           then Just ("", [e])
           else
-            case parsePlus t of
+            case snd t of
               Just (t', _) ->
                 let rest = go t' in
                 ((e:) <$>) <$> rest
               Nothing -> Just (t, [e])
+
+parseSum :: String -> Maybe (String, Expr)
+parseSum str = parseExpr True Plus parseMult (\s -> parsePlus s <|> parseDash s) str
 
 parseMult :: String -> Maybe (String, Expr)
-parseMult str =
-    (binOp Mult <$>) <$> go str
-  where
-    go :: String -> Maybe (String, [Expr])
-    go str =
-      let first = parseDigit str <|> parseExprBr str  in
-      case first of
-        Nothing -> Nothing
-        Just (t, e) ->
-          if null t
-          then Just ("", [e])
-          else
-            case parseStar t of
-              Just (t', _) ->
-                let rest = go t' in
-                ((e:) <$>) <$> rest
-              Nothing -> Just (t, [e])
+parseMult str = parseExpr True Mult parsePower (\s -> parseStar s <|> parseSlash s) str
 
+parsePower :: String -> Maybe (String, Expr)
+parsePower str = parseExpr False Pow (\s -> parseDigit s <|> parseExprBr s) parseHat str
 
 parseExprBr :: String -> Maybe (String, Expr)
 parseExprBr ('(' : t) =
@@ -114,16 +111,30 @@ parseExprBr ('(' : t) =
     _ -> Nothing
 parseExprBr _ = Nothing
 
-binOp :: Operator -> [Expr] -> Expr
-binOp op = foldl1 (BinOp op)
+binOpL :: Operator -> [Expr] -> Expr
+binOpL op = foldl1 (BinOp op)
+
+binOpR :: Operator -> [Expr] -> Expr
+binOpR op = foldr1 (BinOp op)
+
+parseOpSymbol :: Char -> Operator -> String -> Maybe (String, Operator)
+parseOpSymbol symbol op (c : t) | c == symbol = Just (t, op)
+                                | otherwise   = Nothing
 
 parsePlus :: String -> Maybe (String, Operator)
-parsePlus ('+' : t) = Just (t, Plus)
-parsePlus _ = Nothing
+parsePlus = parseOpSymbol '+' Plus
 
 parseStar :: String -> Maybe (String, Operator)
-parseStar ('*' : t) = Just (t, Mult)
-parseStar _ = Nothing
+parseStar = parseOpSymbol '*' Mult
+
+parseDash :: String -> Maybe (String, Operator)
+parseDash = parseOpSymbol '-' Minus
+
+parseSlash :: String -> Maybe (String, Operator)
+parseSlash = parseOpSymbol '/' Div
+
+parseHat :: String -> Maybe (String, Operator)
+parseHat = parseOpSymbol '^' Pow
 
 parseDigit :: String -> Maybe (String, Expr)
 parseDigit (d : t) | isDigit d =
