@@ -46,10 +46,11 @@ parse pType str =
 --       | * Expr Expr
 --       | - Expr Expr
 --       | / Expr Expr
+--       | ^ Expr Expr
 --       | Digit
 -- +1*234 -> Just ("4", ...)
 parsePrefix :: String -> Maybe (String, Expr)
-parsePrefix (op : t) | op == '+' || op == '*' || op == '-' || op == '/' =
+parsePrefix (op : t) | op == '+' || op == '*' || op == '-' || op == '/' || op == '^' =
   case parsePrefix t of
     Just (t', l) ->
       case parsePrefix t' of
@@ -63,12 +64,14 @@ parsePrefix _ = Nothing
 -- Expr :: Expr + Expr
 --       | Expr * Expr
 --       | Expr - Expr
+--       | Expr / Expr
 --       | Expr ^ Expr
 --       | Digit
 --       | ( Expr )
 -- Expr :: Слаг (+|-) Слаг (+|-) ... (+|-) Слаг
 -- Слаг :: Множ ((*|/) Множ) (*|/) ... ((*|/) Множ) -> [Expr]
--- Множ :: Цифра | Выражение в скобках
+-- Множ :: Атом ^ Атом ^ ... ^ Атом
+-- Атом :: Цифра | Выражение в скобках
 parseInfix :: String -> Maybe (String, Expr)
 parseInfix = parseSum
 
@@ -97,7 +100,7 @@ parseMult str =
   where
     go :: String -> Operator -> Maybe (String, [(Operator, Expr)])
     go str op =
-      let first = parseDigit str <|> parseExprBr str  in
+      let first = parsePow str  in
       case first of
         Nothing -> Nothing
         Just (t, e) ->
@@ -109,6 +112,21 @@ parseMult str =
                 let rest = go t' op' in
                 (((op, e):) <$>) <$> rest
               Nothing -> Just (t, [(op, e)])
+
+parsePow :: String -> Maybe (String, Expr)
+parsePow str =
+    let first = parseDigit str <|> parseExprBr str  in
+    case first of
+      Nothing -> Nothing
+      Just (t, e) ->
+        if null t
+        then Just ("", e)
+        else
+          case parseCap t of
+            Just (t', op) ->
+              let rest = parsePow t' in
+              ((BinOp op e) <$>) <$> rest
+            Nothing -> Just (t, e)
 
 
 parseExprBr :: String -> Maybe (String, Expr)
@@ -136,6 +154,10 @@ parseStar _ = Nothing
 parseSlash :: String -> Maybe (String, Operator)
 parseSlash ('/' : t) = Just (t, Div)
 parseSlash _ = Nothing
+
+parseCap :: String -> Maybe (String, Operator)
+parseCap ('^' : t) = Just (t, Pow)
+parseCap _ = Nothing
 
 parseDigit :: String -> Maybe (String, Expr)
 parseDigit (d : t) | isDigit d =
