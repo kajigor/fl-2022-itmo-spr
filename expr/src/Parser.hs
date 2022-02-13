@@ -3,6 +3,7 @@ module Parser where
 import Text.Printf (printf)
 import Control.Applicative ((<|>))
 import Data.Char (isDigit, digitToInt)
+import Data.Function (on)
 
 data Operator = Plus
               | Mult
@@ -72,73 +73,66 @@ parsePrefix _ = Nothing
 parseInfix :: String -> Maybe (String, Expr)
 parseInfix = parseSum
 
-parseSum :: String -> Maybe (String, Expr)
-parseSum str =
-    (binOp foldl1 <$>) <$> go str undefined
-  where
-    go :: String -> Operator -> Maybe (String, [(Operator, Expr)])
-    go str op = do
-      (t, e) <- parseMult str
-      let maybeOp = parsePlus t <|> parseMinus t
-      rest <- (maybeOp >>= uncurry go) <|> Just (t, [])
-      return $ ((op, e):) <$> rest
+type BinOpFold = (
+                   (Operator, Expr) -> (Operator, Expr) -> (Operator, Expr)
+                 ) -> [(Operator, Expr)] -> (Operator, Expr)
+
+type ParserFn a = String -> Maybe (String, a)
+
+parseSum :: ParserFn Expr 
+parseSum = parseBinOpL parseMult (\s -> parsePlus s <|> parseMinus s)
       
-parseMult :: String -> Maybe (String, Expr)
-parseMult str =
-    (binOp foldl1 <$>) <$> go str undefined
+parseMult :: ParserFn Expr
+parseMult = parseBinOpL parsePow (\s -> parseStar s <|> parseSlash s)
+
+parsePow :: ParserFn Expr 
+parsePow = parseBinOpR (\s -> parseDigit s <|> parseExprBr s) parseCap
+
+parseBinOpL = parseBinOp foldl1
+parseBinOpR = parseBinOp foldr1
+
+parseBinOp :: BinOpFold -> ParserFn Expr -> ParserFn Operator -> ParserFn Expr
+parseBinOp fold1 parseOperand parseOperator str =
+    (binOp fold1 <$>) <$> go str undefined
   where
     go :: String -> Operator -> Maybe (String, [(Operator, Expr)])
     go str op = do
-      (t, e) <- parsePow str
-      let maybeOp = parseStar t <|> parseSlash t
+      (t, e) <- parseOperand str
+      let maybeOp = parseOperator t
       rest <- (maybeOp >>= uncurry go) <|> Just (t, [])
       return $ ((op, e):) <$> rest
 
-parsePow :: String -> Maybe (String, Expr)
-parsePow str = 
-    (binOp foldr1 <$>) <$> go str undefined
-  where
-    go :: String -> Operator -> Maybe (String, [(Operator, Expr)])
-    go str op = do
-      (t, e) <- parseDigit str <|> parseExprBr str
-      let maybeOp = parseCap t
-      rest <- (maybeOp >>= uncurry go) <|> Just (t, [])
-      return $ ((op, e):) <$> rest
-    
-parseExprBr :: String -> Maybe (String, Expr)
+
+parseExprBr :: ParserFn Expr
 parseExprBr ('(' : t) = do
    ((')' : t'), e) <- parseSum t
    return (t' ,e)
 parseExprBr _ = Nothing
 
-binOp :: (
-           (
-             (Operator, Expr) -> (Operator, Expr) -> (Operator, Expr)
-           ) -> [(Operator, Expr)] -> (Operator, Expr)
-         ) -> [(Operator, Expr)] -> Expr
+binOp :: BinOpFold -> [(Operator, Expr)] -> Expr
 binOp fold1 = snd . (fold1 (\ (op1, e1) (op2, e2) -> (op1, BinOp op2 e1 e2)))
 
-parsePlus :: String -> Maybe (String, Operator)
+parsePlus :: ParserFn Operator
 parsePlus ('+' : t) = Just (t, Plus)
 parsePlus _ = Nothing
 
-parseMinus :: String -> Maybe (String, Operator)
+parseMinus :: ParserFn Operator
 parseMinus ('-' : t) = Just (t, Minus)
 parseMinus _ = Nothing
 
-parseStar :: String -> Maybe (String, Operator)
+parseStar :: ParserFn Operator
 parseStar ('*' : t) = Just (t, Mult)
 parseStar _ = Nothing
 
-parseSlash :: String -> Maybe (String, Operator)
+parseSlash :: ParserFn Operator
 parseSlash ('/' : t) = Just (t, Div)
 parseSlash _ = Nothing
 
-parseCap :: String -> Maybe (String, Operator)
+parseCap :: ParserFn Operator
 parseCap ('^' : t) = Just (t, Pow)
 parseCap _ = Nothing
 
-parseDigit :: String -> Maybe (String, Expr)
+parseDigit :: ParserFn Expr
 parseDigit (d : t) | isDigit d =
   Just (t, Num (digitToInt d))
 parseDigit _ = Nothing
