@@ -74,7 +74,7 @@ parseInfix = parseSum
 
 parseSum :: String -> Maybe (String, Expr)
 parseSum str =
-    (binOp <$>) <$> go str undefined
+    (binOp foldl1 <$>) <$> go str undefined
   where
     go :: String -> Operator -> Maybe (String, [(Operator, Expr)])
     go str op = do
@@ -85,7 +85,7 @@ parseSum str =
       
 parseMult :: String -> Maybe (String, Expr)
 parseMult str =
-    (binOp <$>) <$> go str undefined
+    (binOp foldl1 <$>) <$> go str undefined
   where
     go :: String -> Operator -> Maybe (String, [(Operator, Expr)])
     go str op = do
@@ -95,23 +95,28 @@ parseMult str =
       return $ ((op, e):) <$> rest
 
 parsePow :: String -> Maybe (String, Expr)
-parsePow str = do
-    (t, e) <- parseDigit str <|> parseExprBr str
-    case parseCap t of
-      Just (t', op) ->
-        let rest = parsePow t' in
-        ((BinOp op e) <$>) <$> rest
-      Nothing -> Just (t, e)
-
-
+parsePow str = 
+    (binOp foldr1 <$>) <$> go str undefined
+  where
+    go :: String -> Operator -> Maybe (String, [(Operator, Expr)])
+    go str op = do
+      (t, e) <- parseDigit str <|> parseExprBr str
+      let maybeOp = parseCap t
+      rest <- (maybeOp >>= uncurry go) <|> Just (t, [])
+      return $ ((op, e):) <$> rest
+    
 parseExprBr :: String -> Maybe (String, Expr)
 parseExprBr ('(' : t) = do
    ((')' : t'), e) <- parseSum t
    return (t' ,e)
 parseExprBr _ = Nothing
 
-binOp :: [(Operator, Expr)] -> Expr
-binOp = snd . (foldl1 (\ (op1, e1) (op2, e2) -> (op1, BinOp op2 e1 e2)))
+binOp :: (
+           (
+             (Operator, Expr) -> (Operator, Expr) -> (Operator, Expr)
+           ) -> [(Operator, Expr)] -> (Operator, Expr)
+         ) -> [(Operator, Expr)] -> Expr
+binOp fold1 = snd . (fold1 (\ (op1, e1) (op2, e2) -> (op1, BinOp op2 e1 e2)))
 
 parsePlus :: String -> Maybe (String, Operator)
 parsePlus ('+' : t) = Just (t, Plus)
