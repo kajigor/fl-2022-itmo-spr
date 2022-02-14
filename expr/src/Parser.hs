@@ -47,7 +47,7 @@ parse pType str =
 --       | Digit
 -- +1*234 -> Just ("4", ...)
 parsePrefix :: String -> Maybe (String, Expr)
-parsePrefix (op : t) | op == '+' || op == '*' =
+parsePrefix (op : t) | op == '+' || op == '*' || op == '-' || op == '/' || op == '^' =
   case parsePrefix t of
     Just (t', l) ->
       case parsePrefix t' of
@@ -66,69 +66,75 @@ parsePrefix _ = Nothing
 -- Слаг :: Множ (* Множ) * ... (* Множ) -> [Expr]
 -- Множ :: Цифра | Выражение в скобках
 parseInfix :: String -> Maybe (String, Expr)
-parseInfix = parseSum
+parseInfix = parseExp parserLowPriority
 
-parseSum :: String -> Maybe (String, Expr)
-parseSum str =
-    (binOp Plus <$>) <$> go str
-  where
-    go :: String -> Maybe (String, [Expr])
-    go str =
-      let first = parseMult str in
-      case first of
-        Nothing -> Nothing
-        Just (t, e) ->
-          if null t
-          then Just ("", [e])
-          else
-            case parsePlus t of
-              Just (t', _) ->
-                let rest = go t' in
-                ((e:) <$>) <$> rest
-              Nothing -> Just (t, [e])
+type InnerParser = (Expr, Maybe Operator)
 
-parseMult :: String -> Maybe (String, Expr)
-parseMult str =
-    (binOp Mult <$>) <$> go str
-  where
-    go :: String -> Maybe (String, [Expr])
-    go str =
-      let first = parseDigit str <|> parseExprBr str  in
-      case first of
-        Nothing -> Nothing
-        Just (t, e) ->
-          if null t
-          then Just ("", [e])
-          else
-            case parseStar t of
-              Just (t', _) ->
-                let rest = go t' in
-                ((e:) <$>) <$> rest
-              Nothing -> Just (t, [e])
+type Fold = (InnerParser -> InnerParser -> InnerParser) -> [InnerParser] -> InnerParser
 
+data ParserBinOp = Parser {getFold :: Fold, getNextOp :: Maybe ParserBinOp,
+                           getSigns :: String -> Maybe (String, Operator)}
+
+parserLowPriority = Parser foldl1 (Just parserMiddlePriority) (\s -> parsePlus s <|> parseMinus s)
+parserMiddlePriority = Parser foldl1 (Just parserHighPriority) (\s -> parseStar s <|> parseSlash s)
+parserHighPriority = Parser foldr1 Nothing parseHat
+
+pureP :: Expr -> InnerParser
+pureP e = (e, Nothing)
+
+(<<*>>) :: InnerParser -> InnerParser -> InnerParser
+(e1, Just op1) <<*>> (e2, op2) = (BinOp op1 e1 e2, op2)
+(<<*>>) x _ = x
+
+parseExp :: ParserBinOp -> String -> Maybe (String, Expr)
+parseExp parser str = getRes ((getFold parser (<<*>>) <$>) <$> go parser str)
+                      where go :: ParserBinOp -> String -> Maybe (String, [InnerParser])
+                            go parser str = let first = case getNextOp parser of
+                                                          Nothing -> parseDigit str <|> parseExprBr str
+                                                          Just p -> parseExp p str
+                                            in
+                                              case first of
+                                                Nothing -> Nothing
+                                                Just (t, e) -> if null t
+                                                               then Just (t, [pureP e])
+                                                               else
+                                                                 case getSigns parser t of
+                                                                   Nothing -> Just (t, [pureP e])
+                                                                   Just (t', op) -> (((e, pure op) :) <$>) <$> go parser t'
+                            getRes (Just p) = Just (fst p, fst (snd p))
+                            getRes _ = Nothing
 
 parseExprBr :: String -> Maybe (String, Expr)
 parseExprBr ('(' : t) =
-  case parseSum t of
-    Just ((')' : t'), e) -> Just (t', e)
+  case parseExp parserLowPriority t of
+    Just (')' : t', e) -> Just (t', e)
     _ -> Nothing
 parseExprBr _ = Nothing
-
-binOp :: Operator -> [Expr] -> Expr
-binOp op = foldl1 (BinOp op)
-
-parsePlus :: String -> Maybe (String, Operator)
-parsePlus ('+' : t) = Just (t, Plus)
-parsePlus _ = Nothing
-
-parseStar :: String -> Maybe (String, Operator)
-parseStar ('*' : t) = Just (t, Mult)
-parseStar _ = Nothing
 
 parseDigit :: String -> Maybe (String, Expr)
 parseDigit (d : t) | isDigit d =
   Just (t, Num (digitToInt d))
 parseDigit _ = Nothing
+
+parsePlus :: String -> Maybe (String, Operator)
+parsePlus ('+' : t) = Just (t, Plus)
+parsePlus _ = Nothing
+
+parseMinus :: String -> Maybe (String, Operator)
+parseMinus ('-' : t) = Just (t, Minus)
+parseMinus _ = Nothing
+
+parseStar :: String -> Maybe (String, Operator)
+parseStar ('*' : t) = Just (t, Mult)
+parseStar _ = Nothing
+
+parseSlash :: String -> Maybe (String, Operator)
+parseSlash ('/' : t) = Just (t, Div)
+parseSlash _ = Nothing
+
+parseHat :: String -> Maybe (String, Operator)
+parseHat ('^' : t) = Just (t, Pow)
+parseHat _ = Nothing
 
 
 plus :: Expr -> Expr -> Expr
