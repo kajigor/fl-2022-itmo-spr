@@ -5,8 +5,8 @@ module Parser where
 
 import Text.Printf (printf)
 import Control.Applicative ((<|>))
-import Data.Char (isDigit, digitToInt)
-import Data.Maybe (fromJust, isNothing, fromMaybe)
+import Data.Char (isDigit, digitToInt, GeneralCategory (MathSymbol))
+import Data.Maybe (fromJust, isNothing, fromMaybe, isJust)
 
 
 data Operator = Plus
@@ -70,19 +70,26 @@ parsePrefix _ = Nothing
 -- Expr :: Слаг + Слаг + ... + Слаг
 -- Слаг :: Множ (* Множ) * ... (* Множ) -> [Expr]
 -- Множ :: Цифра | Выражение в скобках
-parseInfix  str = parseLeftAssociative str
+parseInfix str = parseLA str
 
-parseLeftAssociative :: String -> Maybe (String, Expr)
-parseLeftAssociative = parseUnique foldl1 parseRightAssociative parseOp
+parseAccLeft op symb1 symb2 = parseUnique foldl1 op (\str -> (<|>) (symb1 str) (symb2 str))
 
-parseRightAssociative :: String -> Maybe (String, Expr)
-parseRightAssociative = parseUnique foldr1 parseExpr parseOp
+parseAccRight op symb1 symb2 = parseUnique foldr1 (\str -> (<|>) (symb1 str) (symb2 str)) op
 
---чтобы неструктура парсера сохранилась, но уже возвращаем не просто [выражение] а пару [(выражение, maybe оператор)]
-parseUnique op left right str = 
-  let res = (op applyOp <$>) <$> go left right str 
-        where 
-          go left right str = 
+parseLA :: String -> Maybe (String, Expr)
+parseLA = parseAccLeft parseLAHighOrder parseMinus parsePlus
+
+parseLAHighOrder :: String -> Maybe (String, Expr)
+parseLAHighOrder = parseAccLeft parseRA parseSlash parseStar
+
+parseRA :: String -> Maybe (String, Expr)
+parseRA = parseAccRight parsePow parseDigit parseExprBr
+
+--структура парсера сохранилась, но уже возвращаем не просто [выражение] а пару [(выражение, maybe оператор)]
+parseUnique op left right str =
+  let res = (op applyOp <$>) <$> go left right str
+        where
+          go left right str =
                 let first = left str in
                 case first of
                 Nothing -> Nothing
@@ -98,32 +105,43 @@ parseUnique op left right str =
           applyOp left right | isNothing $ snd left = left
                              | otherwise = (BinOp (fromJust $ snd left) (fst left) (fst right), snd right)
     in case res of
-      Nothing -> Nothing 
+      Nothing -> Nothing
       Just (t, e) -> Just (t, fst e)
-        
--- -- парсим операторы 
-parseOp :: String -> Maybe (String, Operator)
-parseOp (s : str) =
-    if isDigit s then parseOp str
-    else
-      case s of 
-        '+' -> Just (str, Plus)
-        '-' -> Just (str, Minus)
-        '/' -> Just (str, Div)
-        '*' -> Just (str, Mult)
-        '^' -> Just (str, Pow)
-        _ -> Nothing 
-parseOp [] = Nothing
 
---парсим цифры или скобки
-parseExpr :: String -> Maybe (String, Expr)
-parseExpr (x : xs) | isDigit x = Just (xs, Num (digitToInt x))
-                   | null (x:xs) = Nothing
-                   | x == '(' = a 
-                    where
-                      a =  case parseLeftAssociative xs of
-                        Just (')' : t', e) -> Just (t', e)
-                        _ -> Nothing
+parseExprBr :: String -> Maybe (String, Expr)
+parseExprBr ('(' : t) =
+  case parseLA t of
+    Just (')' : t', e) -> Just (t', e)
+    _ -> Nothing
+parseExprBr _ = Nothing
+
+binOp :: Operator -> [Expr] -> Expr
+binOp op = foldl1 (BinOp op)
+
+parsePlus :: String -> Maybe (String, Operator)
+parsePlus ('+' : t) = Just (t, Plus)
+parsePlus _ = Nothing
+
+parseMinus :: String -> Maybe (String, Operator)
+parseMinus ('-' : t) = Just (t, Minus)
+parseMinus _ = Nothing
+
+parseStar :: String -> Maybe (String, Operator)
+parseStar ('*' : t) = Just (t, Mult)
+parseStar _ = Nothing
+
+parseSlash :: String -> Maybe (String, Operator)
+parseSlash ('/' : t) = Just (t, Div)
+parseSlash _ = Nothing
+
+parsePow :: String -> Maybe (String, Operator)
+parsePow ('^' : t) = Just (t, Pow)
+parsePow _ = Nothing
+
+parseDigit :: String -> Maybe (String, Expr)
+parseDigit (d : t) | isDigit d =
+  Just (t, Num (digitToInt d))
+parseDigit _ = Nothing
 
 plus :: Expr -> Expr -> Expr
 plus = BinOp Plus
