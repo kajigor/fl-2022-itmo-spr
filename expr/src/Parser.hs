@@ -1,8 +1,13 @@
+{-# LANGUAGE BlockArguments #-}
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# OPTIONS_GHC -Wno-typed-holes #-}
 module Parser where
 
 import Text.Printf (printf)
 import Control.Applicative ((<|>))
 import Data.Char (isDigit, digitToInt)
+import Data.Maybe (fromJust, isNothing, fromMaybe)
+
 
 data Operator = Plus
               | Mult
@@ -47,7 +52,7 @@ parse pType str =
 --       | Digit
 -- +1*234 -> Just ("4", ...)
 parsePrefix :: String -> Maybe (String, Expr)
-parsePrefix (op : t) | op == '+' || op == '*' =
+parsePrefix (op : t) | op == '+' || op == '*' || op == '-' || op == '/' || op == '^' =
   case parsePrefix t of
     Just (t', l) ->
       case parsePrefix t' of
@@ -65,71 +70,60 @@ parsePrefix _ = Nothing
 -- Expr :: Слаг + Слаг + ... + Слаг
 -- Слаг :: Множ (* Множ) * ... (* Множ) -> [Expr]
 -- Множ :: Цифра | Выражение в скобках
-parseInfix :: String -> Maybe (String, Expr)
-parseInfix = parseSum
+parseInfix  str = parseLeftAssociative str
 
-parseSum :: String -> Maybe (String, Expr)
-parseSum str =
-    (binOp Plus <$>) <$> go str
-  where
-    go :: String -> Maybe (String, [Expr])
-    go str =
-      let first = parseMult str in
-      case first of
-        Nothing -> Nothing
-        Just (t, e) ->
-          if null t
-          then Just ("", [e])
-          else
-            case parsePlus t of
-              Just (t', _) ->
-                let rest = go t' in
-                ((e:) <$>) <$> rest
-              Nothing -> Just (t, [e])
+parseLeftAssociative :: String -> Maybe (String, Expr)
+parseLeftAssociative = parseUnique foldl1 parseRightAssociative parseOp
 
-parseMult :: String -> Maybe (String, Expr)
-parseMult str =
-    (binOp Mult <$>) <$> go str
-  where
-    go :: String -> Maybe (String, [Expr])
-    go str =
-      let first = parseDigit str <|> parseExprBr str  in
-      case first of
-        Nothing -> Nothing
-        Just (t, e) ->
-          if null t
-          then Just ("", [e])
-          else
-            case parseStar t of
-              Just (t', _) ->
-                let rest = go t' in
-                ((e:) <$>) <$> rest
-              Nothing -> Just (t, [e])
+parseRightAssociative :: String -> Maybe (String, Expr)
+parseRightAssociative = parseUnique foldr1 parseExpr parseOp
 
+--чтобы неструктура парсера сохранилась, но уже возвращаем не просто выражение а пару (выражение, maybe оператор)
+parseUnique op left right str = 
+  let res = (op applyOp <$>) <$> go left right str 
+        where 
+          go left right str = 
+                let first = left str in
+                case first of
+                Nothing -> Nothing
+                Just (t, e) ->
+                  if null t
+                  then Just ("", [(e, Nothing)])
+                  else
+                    case right t of
+                      Just (t', e') ->
+                        let rest = go left right t' in
+                        (((e, Just e'):) <$>) <$> rest
+                      Nothing -> Just (t, [(e, Nothing)])
+          applyOp left right | isNothing $ snd left = left
+                             | otherwise = (BinOp (fromJust $ snd left) (fst left) (fst right), snd right)
+    in case res of
+      Nothing -> Nothing 
+      Just (t, e) -> Just (t, fst e)
+        
+-- -- парсим операторы 
+parseOp :: String -> Maybe (String, Operator)
+parseOp (s : str) =
+    if isDigit s then parseOp str
+    else
+      case s of 
+        '+' -> Just (str, Plus)
+        '-' -> Just (str, Minus)
+        '/' -> Just (str, Div)
+        '*' -> Just (str, Mult)
+        '^' -> Just (str, Pow)
+        _ -> Nothing 
+parseOp [] = Nothing
 
-parseExprBr :: String -> Maybe (String, Expr)
-parseExprBr ('(' : t) =
-  case parseSum t of
-    Just ((')' : t'), e) -> Just (t', e)
-    _ -> Nothing
-parseExprBr _ = Nothing
-
-binOp :: Operator -> [Expr] -> Expr
-binOp op = foldl1 (BinOp op)
-
-parsePlus :: String -> Maybe (String, Operator)
-parsePlus ('+' : t) = Just (t, Plus)
-parsePlus _ = Nothing
-
-parseStar :: String -> Maybe (String, Operator)
-parseStar ('*' : t) = Just (t, Mult)
-parseStar _ = Nothing
-
-parseDigit :: String -> Maybe (String, Expr)
-parseDigit (d : t) | isDigit d =
-  Just (t, Num (digitToInt d))
-parseDigit _ = Nothing
-
+--парсим цифры или скобки
+parseExpr :: String -> Maybe (String, Expr)
+parseExpr (x : xs) | isDigit x = Just (xs, Num (digitToInt x))
+                   | null (x:xs) = Nothing
+                   | x == '(' = a 
+                    where
+                      a =  case parseLeftAssociative xs of
+                        Just (')' : t', e) -> Just (t', e)
+                        _ -> Nothing
 
 plus :: Expr -> Expr -> Expr
 plus = BinOp Plus
