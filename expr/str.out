@@ -1,5 +1,5 @@
 Expr:
-BinOp Plus (BinOp Plus (Num 1) (Num 2)) (Num 3)
+BinOp Minus (BinOp Plus (Num 1) (BinOp Mult (Num 2) (BinOp Pow (Num 3) (BinOp Pow (Num 4) (Num 3))))) (BinOp Mult (BinOp Mult (BinOp Minus (BinOp Pow (Num 3) (Num 5)) (Num 5)) (Num 2)) (Num 4))
 
 Value:
-6
+-980571850285419885

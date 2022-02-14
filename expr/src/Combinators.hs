@@ -7,19 +7,23 @@ newtype Parser a = Parser { runParser :: String -> Maybe (String, a) }
 
 leftAssoc :: (elem -> sep -> elem -> elem) -> (elem, [(sep, elem)]) -> elem
 leftAssoc f (first, rest) =
-  foldl (\acc (sep, elem) -> f acc sep elem) first rest
+  foldl (\acc (sep, element) -> f acc sep element) first rest
+
+rightAssoc :: (elem -> sep -> elem -> elem) -> ([(sep, elem)], elem) -> elem
+rightAssoc f (list, lastElem) =
+  foldr (\(sep, element) acc -> f element sep acc) lastElem list
 
 
-rightAssoc :: (elem -> sep -> elem -> elem) -> (elem, [(sep, elem)]) -> elem
-rightAssoc f (first, rest) =
-    let (beginning, last) = go (first, rest) in
-    foldr (\(elem, sep) acc -> f elem sep acc) last beginning
-  where
-    go :: (elem, [(sep, elem)]) -> ([(elem, sep)], elem)
-    go (first, []) = ([], first)
-    go (first, ((sep, second) : rest)) =
-      let (list, last) = go (second, rest) in
-      ((first, sep) : list, last)
+-- rightAssoc :: (elem -> sep -> elem -> elem) -> (elem, [(sep, elem)]) -> elem
+-- rightAssoc f (first, rest) =
+--     let (beginning, last) = go (first, rest) in
+--     foldr (\(elem, sep) acc -> f elem sep acc) last beginning
+--   where
+--     go :: (elem, [(sep, elem)]) -> ([(elem, sep)], elem)
+--     go (first, []) = ([], first)
+--     go (first, ((sep, second) : rest)) =
+--       let (list, last) = go (second, rest) in
+--       ((first, sep) : list, last)
 
 
 -- Expr :: Expr - Expr | Expr + Expr (Левоассоциативно)
@@ -40,6 +44,18 @@ list expr sep = do
       expr' <- expr
       res <- goParser <|> return [] -- т.к. продолжение имеет конец
       return ((sep', expr') : res)
+
+
+listR :: Parser expr -> Parser sep -> Parser ([(sep, expr)], expr)
+listR expr sep = do
+  firstElem <- expr
+  goParser firstElem <|> return ([], firstElem)
+  where
+    goParser element = do
+      sep' <- sep
+      expr' <- expr
+      (res, lastElem) <- goParser expr' <|> return ([], expr')
+      return ((sep', element) : res, lastElem)
 
 
 instance Functor Parser where
