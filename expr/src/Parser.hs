@@ -78,7 +78,7 @@ parseLeftAssociative = parseUnique foldl1 parseRightAssociative parseOp
 parseRightAssociative :: String -> Maybe (String, Expr)
 parseRightAssociative = parseUnique foldr1 parseExpr parseOp
 
---чтобы неструктура парсера сохранилась, но уже возвращаем не просто выражение а пару (выражение, maybe оператор)
+--чтобы неструктура парсера сохранилась, но уже возвращаем не просто [выражение] а пару [(выражение, maybe оператор)]
 parseUnique op left right str = 
   let res = (op applyOp <$>) <$> go left right str 
         where 
