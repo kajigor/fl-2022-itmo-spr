@@ -1,10 +1,19 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-{-# HLINT ignore "Use lambda-case" #-}
+{-# LANGUAGE LambdaCase #-}
 module Infix where
-
-import Expr
-import Data.Char ( isDigit, digitToInt )
-import Combinators
+import           Combinators                    ( Parser(..)
+                                                , list
+                                                , parseDigit
+                                                , parseDiv
+                                                , parseHat
+                                                , parseMinus
+                                                , parsePlus
+                                                , parseStar
+                                                )
+import           Expr                           ( Expr(BinOp)
+                                                , Operator
+                                                )
+import           GHC.Base                       ( (<|>) )
 
 -- Expr :: Expr - Expr | Expr + Expr (Левоассоциативно)
 --       | Expr * Expr | Expr / Expr (Левоассоциативно)
@@ -27,49 +36,27 @@ parsePow :: Parser Expr
 parsePow = rightAssoc toBinOp <$> list (parseDigit <|> parseExprBr) parseHat
 
 toBinOp :: Expr -> Operator -> Expr -> Expr
-toBinOp l op r = BinOp op l r
+toBinOp l op = BinOp op l
 
 parseExprBr :: Parser Expr
-parseExprBr = Parser $ \str ->
-  case str of
-    ('(' : t) ->
-      case runParser parseSum t of
-        Just ((')' : t'), e) -> Just (t', e)
-        _ -> Nothing
-    _ -> Nothing
+parseExprBr = Parser $ \case
+  ('(' : t) -> case runParser parseSum t of
+    Just (')' : t', e) -> Just (t', e)
+    _                  -> Nothing
+  _ -> Nothing
 
-parsePlus :: Parser Operator
-parsePlus = Parser $ \str ->
-  case str of
-    ('+' : t) -> Just (t, Plus)
-    _ -> Nothing
+-- first [(sep, second), (sep', third)] -> sep' (sep (first, second)) third
 
-parseMinus :: Parser Operator
-parseMinus = Parser $ \str ->
-  case str of
-    ('-' : t) -> Just (t, Minus)
-    _ -> Nothing
+leftAssoc :: (elem -> sep -> elem -> elem) -> (elem, [(sep, elem)]) -> elem
+leftAssoc f (first, rest) =
+  foldl (\acc (sep, elem) -> f acc sep elem) first rest
 
-parseStar :: Parser Operator
-parseStar = Parser $ \str ->
-  case str of
-    ('*' : t) -> Just (t, Mult)
-    _ -> Nothing
-
-parseDiv :: Parser Operator
-parseDiv = Parser $ \str ->
-  case str of
-    ('/' : t) -> Just (t, Div)
-    _ -> Nothing
-
-parseHat :: Parser Operator
-parseHat = Parser $ \str ->
-  case str of
-    ('^' : t) -> Just (t, Pow)
-    _ -> Nothing
-
-parseDigit :: Parser Expr
-parseDigit = Parser $ \str ->
-  case str of
-    (d : t) | isDigit d -> Just (t, Num (digitToInt d))
-    _ -> Nothing
+rightAssoc :: (elem -> sep -> elem -> elem) -> (elem, [(sep, elem)]) -> elem
+rightAssoc f (first, rest) =
+  let (beginning, last) = go (first, rest)
+  in  foldr (\(elem, sep) acc -> f elem sep acc) last beginning
+ where
+  go :: (elem, [(sep, elem)]) -> ([(elem, sep)], elem)
+  go (first, []) = ([], first)
+  go (first, (sep, second) : rest) =
+    let (list, last) = go (second, rest) in ((first, sep) : list, last)
