@@ -28,17 +28,17 @@ newtype Parser a = Parser { runParser :: String -> Maybe (String, a) }
 list :: Parser elem -> Parser sep -> Parser (elem, [(sep, elem)])
 list elem sep = do
   first <- elem
-  rest  <- goParser
+  rest  <- go
   return (first, rest)
  where
-  goParser = Parser go
-  go str = case runParser sep str of
-    Just (str', sep') -> case runParser elem str' of
-      Just (str'', elem') -> case go str'' of
-        Just (str''', res) -> Just (str''', (sep', elem') : res)
-        Nothing            -> Just (str'', [(sep', elem')])
-      Nothing -> Nothing
-    Nothing -> Just (str, [])
+  go = do {
+      op <- sep;
+      e  <- elem;
+      do {
+        res <- go;
+        return ((op, e) : res)
+      } <|> return [(op, e)]
+   } <|> return []
 
 char :: Char -> Parser Char
 char c = Parser $ \case
