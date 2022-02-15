@@ -19,7 +19,7 @@
                     | otherwise = auto Eq s
 
     input = "..."
-    result = auto True input
+    result = auto Less input
     ```
     * Состояние -- найденный префик искомой подстроки, начальное -- пустая строка
     ```haskell
