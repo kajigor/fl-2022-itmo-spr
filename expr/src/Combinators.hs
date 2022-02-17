@@ -28,38 +28,24 @@ rightAssoc f (first, rest) =
 
 -- Expr (op Expr) (op Expr) ... (op Expr) -> (Expr, [(op, Expr)])
 list :: Parser elem -> Parser sep -> Parser (elem, [(sep, elem)])
-list elem sep =
-    elem `andThen` \first ->
-    goParser `andThen` \rest ->
-    (Parser $ \str -> Just (str, (first, rest)))
-
-    -- do
-    --   first <- elem
-    --   rest <- goParser
-    --   return $ (first, rest)
-
-
-    -- Parser $ \str ->
-    --   case runParser elem str of
-    --     Just (str', first) ->
-    --       case go str' of
-    --         Just (str'', rest) -> Just (str'', (first, rest))
-    --         Nothing -> Just (str', (first, []))
-    --     Nothing -> Nothing
+list elem sep = do
+    first <- elem
+    rest <- goParser
+    return $ (first, rest)
   where
-    goParser = Parser go
-    go str =
-      case runParser sep str of
-        Just (str', sep') ->
-          case runParser elem str' of
-            Just (str'', elem') ->
-              case go str'' of
-                Just (str''', res) ->
-                  Just (str''', (sep', elem') : res)
-                Nothing ->
-                  Just (str'', [(sep', elem')])
-            Nothing -> Nothing
-        Nothing -> Just (str, [])
+    goParser = do
+      res <- do {
+        sep' <- sep;
+        elem' <- elem;
+        res' <- do {
+            res'' <- goParser;
+            return $ (sep', elem') : res''
+          } <|> return [(sep', elem')];
+        return res'
+      } <|> return []
+      return res
+
+
 
 -- andThen == >>=
 andThen :: Parser a1 -> (a1 -> Parser a2) -> Parser a2
@@ -86,3 +72,20 @@ instance Functor Parser where
     case runParser p str of
       Just (s', res) -> Just (s', f res)
       Nothing -> Nothing
+
+instance Applicative Parser where
+  pure a = Parser $ \str -> Just (str, a)
+  pFa <*> p = Parser $ \str ->
+     case runParser pFa str of
+       Just (s', fa) -> case runParser p s' of
+                           Just (s'', a) -> Just (s'', fa a)
+                           Nothing -> Nothing
+       Nothing -> Nothing
+
+instance Monad Parser where
+  ma >>= aToMb = Parser $ \str ->
+    case runParser ma str of
+      Just (str', res) -> let p = aToMb res in runParser p str'
+      Nothing -> Nothing
+
+
