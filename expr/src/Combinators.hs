@@ -28,15 +28,10 @@ rightAssoc f (first, rest) =
 
 -- Expr (op Expr) (op Expr) ... (op Expr) -> (Expr, [(op, Expr)])
 list :: Parser elem -> Parser sep -> Parser (elem, [(sep, elem)])
-list elem sep =
-    elem `andThen` \first ->
-    goParser `andThen` \rest ->
-    (Parser $ \str -> Just (str, (first, rest)))
-
-    -- do
-    --   first <- elem
-    --   rest <- goParser
-    --   return $ (first, rest)
+list elem sep = do
+    first <- elem
+    rest <- goParser
+    return $ (first, rest)
 
 
     -- Parser $ \str ->
@@ -82,7 +77,15 @@ l <|> r = Parser $ \str ->
     Nothing -> runParser r str
 
 instance Functor Parser where
-  fmap f p = Parser $ \str ->
-    case runParser p str of
-      Just (s', res) -> Just (s', f res)
-      Nothing -> Nothing
+  fmap = (<*>) . pure
+
+instance Applicative Parser where
+  pure x = Parser $ \s -> Just (s, x)
+
+  (Parser p1) <*> (Parser p2) = Parser $ \s -> do
+    (s', f) <- p1 s
+    (s'', x) <- p2 s'
+    return (s'', f x)
+
+instance Monad Parser where
+  (>>=) = andThen
