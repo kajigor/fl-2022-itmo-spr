@@ -2,9 +2,16 @@
 {-# HLINT ignore "Use lambda-case" #-}
 module Infix where
 
-import Expr
-import Data.Char ( isDigit, digitToInt )
+import Expr ( Expr(BinOp), Operator(..) )
 import Combinators
+    ( Parser(runParser),
+      leftAssoc,
+      rightAssoc,
+      list,
+      char,
+      (<|>),
+      parseDigit,
+      listR )
 
 -- Expr :: Expr - Expr | Expr + Expr (Левоассоциативно)
 --       | Expr * Expr | Expr / Expr (Левоассоциативно)
@@ -15,61 +22,49 @@ import Combinators
 -- Слаг :: Множ (* Множ) * ... (* Множ) -> [Expr]
 -- Множ :: Цифра | Выражение в скобках
 parseInfix :: String -> Maybe (String, Expr)
-parseInfix = runParser parseSum
+parseInfix = runParser parseSumDiff
 
-parseSum :: Parser Expr
-parseSum = leftAssoc toBinOp <$> list parseMult (parsePlus <|> parseMinus)
 
-parseMult :: Parser Expr
-parseMult = leftAssoc toBinOp <$> list parsePow (parseStar <|> parseDiv)
+parseSumDiff :: Parser Expr
+parseSumDiff = leftAssoc toBinOp <$> list parseMultDiv (parsePlus <|> parseMinus)
+
+parseMultDiv :: Parser Expr
+parseMultDiv = leftAssoc toBinOp <$> list parsePow (parseStar <|> parseDiv)
 
 parsePow :: Parser Expr
-parsePow = rightAssoc toBinOp <$> list (parseDigit <|> parseExprBr) parseHat
+parsePow = rightAssoc toBinOp <$> listR (parseDigit <|> parseExprBr) parseHat
 
 toBinOp :: Expr -> Operator -> Expr -> Expr
 toBinOp l op r = BinOp op l r
 
 parseExprBr :: Parser Expr
-parseExprBr = Parser $ \str ->
-  case str of
-    ('(' : t) ->
-      case runParser parseSum t of
-        Just ((')' : t'), e) -> Just (t', e)
-        _ -> Nothing
-    _ -> Nothing
+parseExprBr = do
+  br1 <- char '('
+  exp <- parseSumDiff
+  br2 <- char ')'
+  return exp
 
 parsePlus :: Parser Operator
-parsePlus = Parser $ \str ->
-  case str of
-    ('+' : t) -> Just (t, Plus)
-    _ -> Nothing
+parsePlus = do
+  res <- char '+'
+  return Plus
 
 parseMinus :: Parser Operator
-parseMinus = Parser $ \str ->
-  case str of
-    ('-' : t) -> Just (t, Minus)
-    _ -> Nothing
+parseMinus = do
+  res <- char '-'
+  return Minus
 
 parseStar :: Parser Operator
-parseStar = Parser $ \str ->
-  case str of
-    ('*' : t) -> Just (t, Mult)
-    _ -> Nothing
+parseStar = do
+  res <- char '*'
+  return Mult
 
 parseDiv :: Parser Operator
-parseDiv = Parser $ \str ->
-  case str of
-    ('/' : t) -> Just (t, Div)
-    _ -> Nothing
+parseDiv = do
+  res <- char '/'
+  return Div
 
 parseHat :: Parser Operator
-parseHat = Parser $ \str ->
-  case str of
-    ('^' : t) -> Just (t, Pow)
-    _ -> Nothing
-
-parseDigit :: Parser Expr
-parseDigit = Parser $ \str ->
-  case str of
-    (d : t) | isDigit d -> Just (t, Num (digitToInt d))
-    _ -> Nothing
+parseHat = do
+  res <- char '^'
+  return Pow

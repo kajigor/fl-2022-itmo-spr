@@ -1,20 +1,23 @@
 module Prefix where
 
-import Expr
+import Expr ( Expr(BinOp), Operator, toOp )
+import Combinators ( Parser(..), (<|>), parseDigit )
 import Data.Char ( isDigit, digitToInt )
+import Infix
+    ( parsePlus, parseMinus, parseStar, parseDiv, parseHat ) 
 
--- Expr :: + Expr Expr
---       | * Expr Expr
---       | Digit
--- +1*234 -> Just ("4", ...)
 parsePrefix :: String -> Maybe (String, Expr)
-parsePrefix (op : t) | op `elem` "+-*/^" =
-  case parsePrefix t of
-    Just (t', l) ->
-      case parsePrefix t' of
-        Just (t'', r) -> Just (t'', BinOp (toOp op) l r)
-        Nothing -> Nothing
-    Nothing -> Nothing
-parsePrefix (d : t) | isDigit d =
-  Just (t, Num (digitToInt d))
-parsePrefix _ = Nothing
+parsePrefix = runParser innerPrefix
+
+innerPrefix :: Parser Expr
+innerPrefix = parseDigit <|> parseExp
+
+parseExp :: Parser Expr
+parseExp = do
+  op <- parseOp
+  exp1 <- innerPrefix
+  exp2 <- innerPrefix
+  return $ BinOp op exp1 exp2
+
+parseOp :: Parser Operator 
+parseOp =  parsePlus <|> parseMinus <|> parseStar <|> parseDiv <|> parseHat
