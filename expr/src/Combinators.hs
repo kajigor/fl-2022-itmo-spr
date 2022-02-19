@@ -8,17 +8,9 @@ leftAssoc :: (elem -> sep -> elem -> elem) -> (elem, [(sep, elem)]) -> elem
 leftAssoc f (first, rest) =
   foldl (\acc (sep, elem) -> f acc sep elem) first rest
 
-rightAssoc :: (elem -> sep -> elem -> elem) -> (elem, [(sep, elem)]) -> elem
-rightAssoc f (first, rest) =
-    let (beginning, last) = go (first, rest) in
-    foldr (\(elem, sep) acc -> f elem sep acc) last beginning
-  where
-    go :: (elem, [(sep, elem)]) -> ([(elem, sep)], elem)
-    go (first, []) = ([], first)
-    go (first, ((sep, second) : rest)) =
-      let (list, last) = go (second, rest) in
-      ((first, sep) : list, last)
-
+rightAssoc :: (elem -> sep -> elem -> elem) -> ([(elem, sep)], elem) -> elem
+rightAssoc f (beginning, last) =
+  foldr (\(elem, sep) acc -> f elem sep acc) last beginning
 
 -- Expr :: Expr - Expr | Expr + Expr (Левоассоциативно)
 --       | Expr * Expr | Expr / Expr (Левоассоциативно)
@@ -55,6 +47,17 @@ list elem sep = do
                   Just (str'', [(sep', elem')])
             Nothing -> Nothing
         Nothing -> Just (str, [])
+
+listR :: Parser elem -> Parser sep -> Parser ([(elem, sep)], elem)
+listR elem sep = do
+  first <- elem
+  (do 
+    sep' <- sep
+    (lst, last) <- listR elem sep
+    return ((first, sep'):lst, last)
+   ) <|> (do
+    return ([], first)
+   )
 
 -- andThen == >>=
 andThen :: Parser a1 -> (a1 -> Parser a2) -> Parser a2

@@ -24,7 +24,7 @@ parseMult :: Parser Expr
 parseMult = leftAssoc toBinOp <$> list parsePow (parseStar <|> parseDiv)
 
 parsePow :: Parser Expr
-parsePow = rightAssoc toBinOp <$> list (parseDigit <|> parseExprBr) parseHat
+parsePow = rightAssoc toBinOp <$> listR (parseDigit <|> parseExprBr) parseHat
 
 toBinOp :: Expr -> Operator -> Expr -> Expr
 toBinOp l op r = BinOp op l r
