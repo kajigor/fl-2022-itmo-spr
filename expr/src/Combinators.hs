@@ -55,9 +55,7 @@ listR elem sep = do
     sep' <- sep
     (lst, last) <- listR elem sep
     return ((first, sep'):lst, last)
-   ) <|> (do
-    return ([], first)
-   )
+   ) <|> return ([], first)
 
 -- andThen == >>=
 andThen :: Parser a1 -> (a1 -> Parser a2) -> Parser a2
