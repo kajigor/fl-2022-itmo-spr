@@ -5,6 +5,7 @@ module Infix where
 import Expr
 import Data.Char ( isDigit, digitToInt )
 import Combinators
+import Control.Applicative
 
 -- Expr :: Expr - Expr | Expr + Expr (Левоассоциативно)
 --       | Expr * Expr | Expr / Expr (Левоассоциативно)
@@ -24,7 +25,7 @@ parseMult :: Parser Expr
 parseMult = leftAssoc toBinOp <$> list parsePow (parseStar <|> parseDiv)
 
 parsePow :: Parser Expr
-parsePow = rightAssoc toBinOp <$> list (parseDigit <|> parseExprBr) parseHat
+parsePow = rightAssoc toBinOp <$> listR (parseDigit <|> parseExprBr) parseHat
 
 toBinOp :: Expr -> Operator -> Expr -> Expr
 toBinOp l op r = BinOp op l r
