@@ -1,23 +1,17 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+{-# HLINT ignore "Use lambda-case" #-}
 module Combinators where
+import Control.Applicative
 
 newtype Parser a = Parser { runParser :: String -> Maybe (String, a) }
-
--- first [(sep, second), (sep', third)] -> sep' (sep (first, second)) third
 
 leftAssoc :: (elem -> sep -> elem -> elem) -> (elem, [(sep, elem)]) -> elem
 leftAssoc f (first, rest) =
   foldl (\acc (sep, elem) -> f acc sep elem) first rest
 
-rightAssoc :: (elem -> sep -> elem -> elem) -> (elem, [(sep, elem)]) -> elem
+rightAssoc :: (elem -> sep -> elem -> elem) -> ([(elem, sep)], elem) -> elem
 rightAssoc f (first, rest) =
-    let (beginning, last) = go (first, rest) in
-    foldr (\(elem, sep) acc -> f elem sep acc) last beginning
-  where
-    go :: (elem, [(sep, elem)]) -> ([(elem, sep)], elem)
-    go (first, []) = ([], first)
-    go (first, ((sep, second) : rest)) =
-      let (list, last) = go (second, rest) in
-      ((first, sep) : list, last)
+    foldr (\(elem, sep) acc -> f elem sep acc) rest first
 
 
 -- Expr :: Expr - Expr | Expr + Expr (Левоассоциативно)
@@ -28,46 +22,31 @@ rightAssoc f (first, rest) =
 
 -- Expr (op Expr) (op Expr) ... (op Expr) -> (Expr, [(op, Expr)])
 list :: Parser elem -> Parser sep -> Parser (elem, [(sep, elem)])
-list elem sep =
-    elem `andThen` \first ->
-    goParser `andThen` \rest ->
-    (Parser $ \str -> Just (str, (first, rest)))
-
-    -- do
-    --   first <- elem
-    --   rest <- goParser
-    --   return $ (first, rest)
-
-
-    -- Parser $ \str ->
-    --   case runParser elem str of
-    --     Just (str', first) ->
-    --       case go str' of
-    --         Just (str'', rest) -> Just (str'', (first, rest))
-    --         Nothing -> Just (str', (first, []))
-    --     Nothing -> Nothing
+list elem sep = do
+                  first <- elem
+                  rest <- goParser <|> return []
+                  return (first, rest)
   where
-    goParser = Parser go
-    go str =
-      case runParser sep str of
-        Just (str', sep') ->
-          case runParser elem str' of
-            Just (str'', elem') ->
-              case go str'' of
-                Just (str''', res) ->
-                  Just (str''', (sep', elem') : res)
-                Nothing ->
-                  Just (str'', [(sep', elem')])
-            Nothing -> Nothing
-        Nothing -> Just (str, [])
+    goParser = do
+                sep' <- sep
+                elem' <- elem
+                do {
+                  res <- goParser;
+                  return ((sep', elem'):res)
+                } <|> return [(sep', elem')]
 
--- andThen == >>=
-andThen :: Parser a1 -> (a1 -> Parser a2) -> Parser a2
-andThen l r = Parser $ \str ->
-  case runParser l str of
-    Just (str', res) -> runParser (r res) str'
-    Nothing -> Nothing
-
+listR :: Parser elem -> Parser sep -> Parser ([(elem, sep)], elem)
+listR elem sep = do
+                  res <- goParser <|> return []
+                  first <- elem
+                  return (res, first)
+  where goParser = do
+                    elem' <- elem
+                    sep' <- sep
+                    do {
+                      res <- goParser;
+                      return ((elem', sep'):res)
+                    } <|> return [(elem', sep')]
 
 char :: Char -> Parser Char
 char c = Parser $ \str ->
@@ -75,14 +54,31 @@ char c = Parser $ \str ->
     (h : t) | c == h -> Just (t, c)
     _ -> Nothing
 
-(<|>) :: Parser a -> Parser a -> Parser a
-l <|> r = Parser $ \str ->
-  case runParser l str of
-    Just (str', res) -> Just (str', res)
-    Nothing -> runParser r str
+
+instance Applicative Parser where
+  pure a = Parser (\str -> Just (str, a))
+  (Parser p1) <*> (Parser p2) = Parser $ \str -> case p1 str of
+                                                  Nothing -> Nothing
+                                                  Just (str', f) ->
+                                                    case p2 str' of
+                                                      Nothing -> Nothing
+                                                      Just (str'', e) -> Just (str'', f e)
+
+instance Alternative Parser where
+  empty = Parser (const Nothing)
+  (Parser l) <|> (Parser r) = Parser $ \str -> case l str of
+                                                Just (str', res) -> Just (str', res)
+                                                Nothing -> r str
 
 instance Functor Parser where
-  fmap f p = Parser $ \str ->
-    case runParser p str of
+  fmap f (Parser p) = Parser $ \str ->
+    case p str of
       Just (s', res) -> Just (s', f res)
       Nothing -> Nothing
+
+
+instance Monad Parser where
+  return = pure
+  (Parser p1) >>= p2 = Parser $ \str -> case p1 str of
+                                          Just (str', res) -> runParser (p2 res) str'
+                                          Nothing -> Nothing
