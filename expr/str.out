@@ -1,0 +1,5 @@
+Expr:
+BinOp Plus (BinOp Plus (Num 1) (Num 2)) (Num 3)
+
+Value:
+6
