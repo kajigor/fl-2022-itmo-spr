@@ -1,0 +1,5 @@
+Expr:
+BinOp Plus (Num 123) (BinOp Mult (Num 45) (Num 6))
+
+Value:
+393
