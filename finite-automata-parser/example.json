@@ -5,7 +5,7 @@
   "start": "A",
   "sigma": [
     { "from": "A", "to": "B", "by": 0 },
-    { "from": "A", "to": "B", "by": 1 },
+    { "from": "A", "to": "C", "by": 1 },
     { "from": "B", "to": "D", "by": 1 },
     { "from": "C", "to": "E", "by": 1 },
     { "from": "D", "to": "B", "by": 0 },
