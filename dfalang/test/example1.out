@@ -1,0 +1,7 @@
+Alphabet: A B alpha   
+States: C D beta   
+Start: beta    
+Terminals: D beta
+C -> D: B alpha
+beta -> C: A
+beta -> D: alpha

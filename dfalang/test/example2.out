@@ -1,0 +1,5 @@
+Alphabet: a   
+States: a   
+Start: a    
+Terminals: 
+a -> a: a

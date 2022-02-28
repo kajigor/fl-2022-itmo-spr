@@ -1,0 +1,5 @@
+Alphabet: a b   
+States: Start hello_world   
+Start: Start    
+Terminals: hello_world
+Start -> hello_world: a b

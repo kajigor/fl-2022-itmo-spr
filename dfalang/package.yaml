@@ -1,7 +1,7 @@
 name:                dfalang
 version:             0.1.0.0
 github:              "borisPristupa/dfalang"
-license:             BSD3
+license:             MIT
 author:              "Boris Pristupa"
 maintainer:          "boris.pristupa@gmail.com"
 copyright:           "Boris Pristupa"
@@ -24,6 +24,8 @@ dependencies:
 
 library:
   source-dirs: src
+  dependencies:
+    - containers
 
 executables:
   dfalang-exe:
@@ -35,6 +37,9 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - dfalang
+    - optparse-applicative
+    - filepath
+    - containers
 
 tests:
   dfalang-test:
@@ -46,3 +51,4 @@ tests:
     - -with-rtsopts=-N
     dependencies:
     - dfalang
+    - containers
