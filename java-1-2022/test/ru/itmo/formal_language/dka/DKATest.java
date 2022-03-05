@@ -17,7 +17,7 @@ class DKATest {
     @Test
     void testDKA() {
         try (BufferedReader reader = new BufferedReader(
-                new FileReader("/home/ivankozlov98/Learning/Formal_language/fl-2022-itmo-spr/java-1-2022/testResources/test1.txt")
+                new FileReader("testResources/test1.txt")
         )) {
             // 1 test
             DKA dka = new DKA();
@@ -36,7 +36,7 @@ class DKATest {
             fail();
         }
         try (BufferedReader reader = new BufferedReader(
-                new FileReader("/home/ivankozlov98/Learning/Formal_language/fl-2022-itmo-spr/java-1-2022/testResources/test2.txt")
+                new FileReader("testResources/test2.txt")
         )) {
             // 2 test
             DKA dka = new DKA();
