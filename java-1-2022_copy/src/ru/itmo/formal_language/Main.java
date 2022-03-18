@@ -6,6 +6,7 @@ import ru.itmo.formal_language.dka.DKAInitException;
 import ru.itmo.formal_language.dka.DKAPrinter;
 
 import java.io.*;
+import java.text.ParseException;
 
 /**
  * Синтаксис для описания конечного автомата:
@@ -84,10 +85,11 @@ import java.io.*;
  * */
 
 public class Main {
-    // <filename> [-print] [-init] [-states] [-terminal] [-trans] [-alphabet]
+    // <filename> [-print] [-init] [-states] [-terminal] [-trans] [-alphabet] [-accept string]
+    // string in accept without quotes
     public static void main(String[] args) {
         if (args.length == 0) {
-            System.out.println("<filename> [-init] [-states] [-terminal] [-trans] [-alphabet]");
+            System.out.println("<filename> [-init] [-states] [-terminal] [-trans] [-alphabet] [-accept string(without quotes)]");
             return;
         }
         String inputFile = args[0];
@@ -96,7 +98,8 @@ public class Main {
         ); BufferedWriter writer = new BufferedWriter(new FileWriter(inputFile + ".out"))) {
             DKA dka = new DKA();
             dka.init(reader);
-            for (int i = 1; i < args.length; i++) {
+            int i = 1;
+            while (i < args.length) {
                 String option = args[i];
                 switch (option) {
                     case "-print" : {
@@ -127,12 +130,26 @@ public class Main {
                         writer.newLine();
                         break;
                     }
+                    case "-accept" : {
+                        if (i + 1 >= args.length)
+                            throw new RuntimeException("Expected string after -accept");
+                        if (dka.acceptString(args[i + 1])) {
+                            writer.write('\"' + args[i + 1] + '\"' + " was accepted");
+                        } else {
+                            writer.write('\"' + args[i + 1] + '\"' + " wasn't accepted");
+                        }
+                        writer.newLine();
+                        i++;
+                    }
                 }
+                i++;
             }
         } catch (IOException e) {
             System.out.println("Check names your files");
         } catch (DKAInitException e1) {
             System.out.println(e1.getMessage());
+        } catch (RuntimeException e2) {
+            System.out.println(e2.getMessage());
         }
     }
 }
