@@ -1,6 +1,6 @@
 module DFA where
 
-import Util ( associate )
+import Util ( associate, orElse )
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.List (intercalate)
@@ -30,6 +30,14 @@ dfaStates (DFA start terminals delta) = S.union deltaStates $ S.insert start ter
     statesTo = S.fromList $ do 
       transitions <- M.elems delta
       M.elems transitions
+
+checkConsume :: DFA -> [Symbol] -> Bool
+checkConsume (DFA start terminals _) [] = start `S.member` terminals
+checkConsume (DFA start terminals delta) (sym:syms) = orElse (do
+    symStateMap <- delta M.!? start
+    newState <- symStateMap M.!? sym
+    return $ checkConsume (DFA newState terminals delta) syms
+  ) False
 
 prettyPrint :: DFA -> String
 prettyPrint dfa@(DFA start terminals delta) = printf 

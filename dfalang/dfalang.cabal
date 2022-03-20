@@ -27,7 +27,6 @@ library
   exposed-modules:
       Combinators
       DFA
-      Lib
       Parser
       Util
   other-modules:
