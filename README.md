@@ -20,3 +20,4 @@
 [Запись лекции](https://drive.google.com/file/d/1H931HQPtDvoUoN34qVMCDpImO1sU-fJ9/view?usp=sharing)
 
 [Запись предыдущей лекции](https://drive.google.com/file/d/1kHhF037POrajDCp-7P3aXEJjYjUrWuNe/view?usp=sharing)
+
