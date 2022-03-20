@@ -76,7 +76,7 @@ def parse(string):
         raise ParseError("Syntax error, expected =")
 
     # fill automaton
-    a = Automatos()   
+    a = Automatos(alphabet)   
 
     # parse actions
     tidx = toLineEnd(string, tidx) + 1
