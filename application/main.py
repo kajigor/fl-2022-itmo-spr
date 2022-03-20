@@ -1,7 +1,10 @@
 #!/usr/bin/env python
+from collections import defaultdict
 
 import lib.parser as parser
 import sys
+import networkx as nx
+import matplotlib.pyplot as plt
 
 
 def main(args):
@@ -21,6 +24,8 @@ def main(args):
             command = arguments[0]
             if command == "exit":
                 return
+            elif command == "visualize":
+                visualize(automat)
             elif command in ["check"]:
                 print("Not enough arguments")
             else:
@@ -38,6 +43,36 @@ def main(args):
 
         else:
             print("Not enough arguments")
+
+
+def visualize(automat):
+    g = nx.DiGraph()
+
+    node_list = list(automat.states.keys())
+    initial_state = automat.root.name
+    node_color = ['grey' if ind == node_list.index(initial_state) else
+                  'white' for ind in range(len(node_list))]
+    terminal_states_idx = [s.name for s in automat.states.values() if s.is_terminal]
+
+    for name, state in automat.states.items():
+        g.add_node(name, shape='doublecircle' if state.is_terminal else 'circle',
+                   fillcolor='grey' if state == automat.root else 'white', style='filled')
+
+    temp = defaultdict(list)
+    for name, state in automat.states.items():
+        for lit, children in state.children.items():
+            for c in children:
+                temp[(name, c.name)].append(lit)
+
+    edge_labels = {}
+    for k, v in temp.items():
+        g.add_edge(k[0], k[1], label=','.join(v))
+        edge_labels[(k[0], k[1])] = ','.join(v)
+
+    nx.draw_networkx(g, pos=nx.planar_layout(g), node_color=node_color)
+    nx.draw_networkx_edge_labels(g, pos=nx.planar_layout(g), edge_labels=edge_labels)
+    nx.draw_networkx_nodes(g, pos=nx.planar_layout(g), nodelist=terminal_states_idx, node_shape='d')
+    plt.show()
 
 
 if __name__ == "__main__":
