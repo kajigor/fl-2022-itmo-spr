@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 from collections import defaultdict
 
+from lib.transform_to_dka import transformation
+
 import lib.parser as parser
 import sys
 import networkx as nx
@@ -34,7 +36,8 @@ def main(args):
         elif len(arguments) > 1:
             command, arguments = arguments
             if command == "check":
-                if automat.go(arguments.strip()):
+                automat_for_check = transformation(automat)
+                if automat_for_check.go(arguments.strip()):
                     print("String is accepted")
                 else:
                     print("String is not accepted")

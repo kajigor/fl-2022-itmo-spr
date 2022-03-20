@@ -14,9 +14,10 @@ class State:
         return self.children[lit][branch]
 
 class Automatos:
-    def __init__(self):
+    def __init__(self, alfabet):
         self.states = {}
         self.root = None
+        self.alfabet = alfabet
     def addState(self, name):
         if name in self.states:
             return
@@ -30,7 +31,6 @@ class Automatos:
     def has(self, name):
         return name in self.states
     def go(self, str):
-        #TODO: ДКА только
         current = self.root
         for c in str:
             if current is None:
