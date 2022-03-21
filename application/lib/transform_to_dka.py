@@ -31,7 +31,6 @@ def transformation(nka_automa: Automatos) -> Automatos:
     return dka_automa
 
 
-
 def make_new_children(alfabet, states_array):
     children = {}
     for symb in alfabet:
@@ -41,4 +40,5 @@ def make_new_children(alfabet, states_array):
                 symb_states = symb_states.union(state.children[symb])
         children[symb] = list(symb_states)
     return children
-
+  
+  
