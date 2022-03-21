@@ -1,6 +1,6 @@
 from queue import Queue
 
-from automat import Automatos, State
+from .automat import *
 
 
 def transformation(nka_automa: Automatos) -> Automatos:

@@ -2,6 +2,7 @@
 from collections import defaultdict
 
 from lib.transform_to_dka import transformation
+from lib.minimize_dka import  minimize
 
 import lib.parser as parser
 import sys
@@ -28,6 +29,12 @@ def main(args):
                 return
             elif command == "visualize":
                 visualize(automat)
+            elif command == "dka":
+                automat = transformation(automat)
+                print("done")
+            elif command == "minimize":
+                automat = minimize(automat)
+                print("done")
             elif command in ["check"]:
                 print("Not enough arguments")
             else:
