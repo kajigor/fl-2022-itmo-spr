@@ -1,6 +1,6 @@
 from queue import Queue
 
-from application.lib.automat import Automatos, State
+from automat import Automatos, State
 
 
 def transformation(nka_automa: Automatos) -> Automatos:
@@ -40,3 +40,5 @@ def make_new_children(alfabet, states_array):
                 symb_states = symb_states.union(state.children[symb])
         children[symb] = list(symb_states)
     return children
+  
+  

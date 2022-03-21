@@ -1,5 +1,5 @@
 from os import stat
-from .automat import Automatos
+from automat import Automatos
 
 class ParseError(Exception):
     def __init__(self, message):
