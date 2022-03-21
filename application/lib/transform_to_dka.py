@@ -43,8 +43,3 @@ def make_new_children(alfabet, states_array):
         children[symb] = list(symb_states)
     return children
 
-
-if __name__ == "__main__":
-    nka = parseFromFile('test.txt')
-    dka = transformation(nka)
-    print("done")
