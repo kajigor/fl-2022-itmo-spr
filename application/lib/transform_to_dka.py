@@ -24,10 +24,11 @@ def transformation(nka_automa: Automatos) -> Automatos:
                 que.put(new_state)
 
                 dka_automa.addState(new_state_name)
+                if new_state.is_terminal:
+                    dka_automa.makeTerminal(new_state_name)
             dka_automa.addAction(cur_state.name, new_state_name, symb)
 
     return dka_automa
-
 
 
 def make_new_children(alfabet, states_array):
@@ -39,5 +40,3 @@ def make_new_children(alfabet, states_array):
                 symb_states = symb_states.union(state.children[symb])
         children[symb] = list(symb_states)
     return children
-
-
