@@ -1,7 +1,6 @@
 from queue import Queue
 
 from automat import Automatos, State
-from parser import parseFromFile
 
 
 def transformation(nka_automa: Automatos) -> Automatos:
