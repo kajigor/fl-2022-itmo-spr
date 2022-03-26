@@ -71,16 +71,18 @@ public class DKAUtils {
                 writer.newLine();
             }
             // write transition function
-            Map<Map.Entry<String, Character>, String> transitionFunction = dka.getTransitionFunction();
+            var transitionFunction = dka.getTransitionFunction();
             writer.write(String.valueOf(transitionFunction.size()));
             writer.newLine();
             for (var qCharQ : transitionFunction.entrySet()) {
-                writer.write(qCharQ.getKey().getKey());
-                writer.write(' ');
-                writer.write(qCharQ.getKey().getValue());
-                writer.write(' ');
-                writer.write(qCharQ.getValue());
-                writer.newLine();
+                for (var qTo : qCharQ.getValue()) {
+                    writer.write(qCharQ.getKey().getKey());
+                    writer.write(' ');
+                    writer.write(qCharQ.getKey().getValue());
+                    writer.write(' ');
+                    writer.write(qTo);
+                    writer.newLine();
+                }
             }
         }
     }
@@ -111,12 +113,13 @@ public class DKAUtils {
         for (var trans : transitionFun.entrySet()) {
             var qFrom = trans.getKey().getKey();
             var alpha = trans.getKey().getValue();
-            var qTo = trans.getValue();
-            var tmpKey = Map.entry(qFrom, qTo);
-            if (!prettyTransitionFun.containsKey(tmpKey)) {
-                prettyTransitionFun.put(tmpKey, new TreeSet<>());
+            for (var qTo : trans.getValue()) {
+                var tmpKey = Map.entry(qFrom, qTo);
+                if (!prettyTransitionFun.containsKey(tmpKey)) {
+                    prettyTransitionFun.put(tmpKey, new TreeSet<>());
+                }
+                prettyTransitionFun.get(tmpKey).add(alpha);
             }
-            prettyTransitionFun.get(tmpKey).add(alpha);
         }
         Graph g = graph(file).directed();
         for (var trans : prettyTransitionFun.entrySet()) {

@@ -10,6 +10,8 @@ import java.io.*;
 /**
  * Синтаксис для описания конечного автомата:
  * --------------------------------------
+ * (1) классическое определение 1-го автомата
+ * -----------
  *  N
  * a_1
  * a_2
@@ -30,11 +32,17 @@ import java.io.*;
  * q_i_2 a_j_2 q_k_2
  * ..
  * q_i_K a_j_K q_k_K
+ *
+ * (2) описание выражений над автоматами, где '+' означает объединение автоматов, а '*' означает пересечение
+ * + (or  *)
+ * описание 1-го автомата по (1)
+ * описание 2-го автомата по (1)
  * -----------------------------------
  * где
  * N - мощность алфавита: N :: Int
  * {a_1, .., a_N} - алфавит конечного автомата: a_i :: Character
  * a_i - любой ascii символ кроме пробела
+ * 'E' - означает epsilon-символ
  * M - количество различных состояний, M :: Int
  * {q_1, .., q_M} - все состояния автомата: q_i :: String, где q_1 - начальное состояние
  * q_i - строка из любых символов, не содержащая пробелов
@@ -81,34 +89,52 @@ import java.io.*;
  * q_0 1 q_1
  * q_1 2 q_2
  * q_2 3 q_3
+ *
+ *
+ * Пример объединения автоматов
+ * +
+ * 2
+ * 0
+ * 1
+ * 2
+ * q_0
+ * q_1
+ * 1
+ * q_0
+ * 4
+ * q_0 0 q_1
+ * q_0 1 q_1
+ * q_1 0 q_0
+ * q_1 1 q_0
+ * 3
+ * 1
+ * 2
+ * 3
+ * 4
+ * q_0
+ * q_1
+ * q_2
+ * q_3
+ * 1
+ * q_3
+ * 3
+ * q_0 1 q_1
+ * q_1 2 q_2
+ * q_2 3 q_3
  * */
 
 public class Main {
 
-    public static void processMult(DKA firstDka, String secondInput, String outFileName) throws IOException, DKAInitException {
-        try (BufferedReader secondReader = new BufferedReader(
-                     new FileReader(secondInput));) {
-            DKA secondDka = new DKA();
-            secondDka.init(secondReader);
-            DKA multDka = DKA.mult(firstDka, secondDka);
-            DKAUtils.writeDKA(multDka, outFileName);
-        }
-    }
-
-
-    // <filename> [-print] [-init] [-states] [-terminal] [-trans] [-alphabet] [-accept string]
+    // <filename> [-print] [-init] [-states] [-terminal] [-trans] [-alphabet]
     // string in accept without quotes
     public static void main(String[] args) {
         if (args.length == 0) {
-            System.out.println("<filename> [-init] [-states] [-terminal] [-trans] [-alphabet] [-accept string(without quotes)] [-mult in2.txt out.txt]");
+            System.out.println("<filename> [-init] [-states] [-terminal] [-trans] [-alphabet]");
             return;
         }
         String inputFile = args[0];
-        try (BufferedReader reader = new BufferedReader(
-                new FileReader(inputFile)
-        ); BufferedWriter writer = new BufferedWriter(new FileWriter(inputFile + ".out"))) {
-            DKA dka = new DKA();
-            dka.init(reader);
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(inputFile + ".out"))) {
+            DKA dka = DKA.init(inputFile);
             int i = 1;
             while (i < args.length) {
                 String option = args[i];
@@ -140,23 +166,6 @@ public class Main {
                         writer.write(dka.getAlphabet().toString());
                         writer.newLine();
                         break;
-                    }
-                    case "-accept" : {
-                        if (i + 1 >= args.length)
-                            throw new RuntimeException("Expected string after -accept");
-                        if (dka.acceptString(args[i + 1])) {
-                            writer.write('\"' + args[i + 1] + '\"' + " was accepted");
-                        } else {
-                            writer.write('\"' + args[i + 1] + '\"' + " wasn't accepted");
-                        }
-                        writer.newLine();
-                        i++;
-                    }
-                    case "-mult" : {
-                        if (i + 2 >= args.length)
-                            throw new RuntimeException("Expected two filenames after -mult");
-                        processMult(dka, args[i + 1], args[i + 2]);
-                        i += 2;
                     }
                 }
                 i++;

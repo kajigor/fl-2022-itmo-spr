@@ -1,6 +1,7 @@
 package ru.itmo.formal_language.dka;
 
 import java.io.BufferedReader;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.*;
@@ -33,7 +34,7 @@ public class DKA {
      *  * q_i_K a_j_K q_k_K
      *
      * */
-    private Set<Character> alphas = new TreeSet<>();
+    private Set<Character> alphas = new HashSet<>();
     private Set<String> states = new TreeSet<>();
 
     public Set<String> getStates() {
@@ -44,7 +45,7 @@ public class DKA {
         return q0;
     }
 
-    public Map<Map.Entry<String, Character>, String> getTransitionFunction() {
+    public Map<Map.Entry<String, Character>, List<String>> getTransitionFunction() {
         return transitionFunction;
     }
 
@@ -62,29 +63,68 @@ public class DKA {
         return result;
     }
 
-    public static DKA mult(DKA firstDka, DKA secondDka) {
+    private static void addTransition(Map<Map.Entry<String, Character>, List<String>> transitionFunction,
+                               String qFrom, Character symb, String qTo) {
+        var key = Map.entry(qFrom, symb);
+        transitionFunction.putIfAbsent(key, new ArrayList<>());
+        transitionFunction.get(key).add(qTo);
+    }
+
+    enum Operation {
+        MULT, UNION;
+    }
+
+    private static DKA multImpl(DKA firstDka, DKA secondDka, Operation operation) {
         DKA result = new DKA();
         result.q0 = multPresent(firstDka.q0, secondDka.q0);
         result.states = multSets(firstDka.states, secondDka.states);
-        result.terminalStates = multSets(firstDka.terminalStates, secondDka.terminalStates);
+        switch (operation) {
+            case MULT: {
+                result.terminalStates = multSets(firstDka.terminalStates, secondDka.terminalStates);
+                break;
+            }
+            case UNION: {
+                result.terminalStates = Stream.concat(
+                        multSets(firstDka.terminalStates, secondDka.states).stream(),
+                        multSets(firstDka.states, secondDka.terminalStates).stream()).
+                        collect(Collectors.toSet());
+                break;
+            }
+        }
+
         result.alphas = Stream.concat(firstDka.alphas.stream(),secondDka.alphas.stream()).collect(Collectors.toSet());
 
-        Map<Map.Entry<String, Character>, String> firstTF = firstDka.transitionFunction;
-        Map<Map.Entry<String, Character>, String> secondTF = secondDka.transitionFunction;
+        var firstTF = firstDka.transitionFunction;
+        var secondTF = secondDka.transitionFunction;
         result.transitionFunction = new HashMap<>();
         for (var firstState : firstDka.states) {
             for (var secondState : secondDka.states) {
                 for (var alpha : result.alphas) {
-                    String firstNext = firstTF.get(Map.entry(firstState, alpha));
-                    String secondNext = secondTF.get(Map.entry(secondState, alpha));
-                    if (firstNext != null && secondNext != null) {
-                        result.transitionFunction.put(Map.entry(multPresent(firstState, secondState), alpha),
-                                multPresent(firstNext, secondNext));
+                    var firstNextStates = firstTF.get(Map.entry(firstState, alpha));
+                    var secondNextStates = secondTF.get(Map.entry(secondState, alpha));
+                    if (firstNextStates == null || secondNextStates == null) {
+                        continue;
+                    }
+                    for (var firstNext : firstNextStates) {
+                        for (var secondNext : secondNextStates) {
+                            if (firstNext != null && secondNext != null) {
+                                addTransition(result.transitionFunction, multPresent(firstState, secondState),
+                                        alpha, multPresent(firstNext, secondNext));
+                            }
+                        }
                     }
                 }
             }
         }
         return result;
+    }
+
+    public static DKA mult(DKA firstDka, DKA secondDka) {
+        return multImpl(firstDka, secondDka, Operation.MULT);
+    }
+
+    public static DKA union(DKA firstDka, DKA secondDka) {
+        return multImpl(firstDka, secondDka, Operation.UNION);
     }
 
     private static void initListChars(BufferedReader reader, Set<Character> list) throws IOException {
@@ -107,7 +147,7 @@ public class DKA {
 
     private Set<String> terminalStates = new TreeSet<>();
     private String q0;
-    private Map<Map.Entry<String, Character>, String> transitionFunction = new HashMap<>();
+    private Map<Map.Entry<String, Character>, List<String>> transitionFunction = new HashMap<>();
 
     public Set<Character> getAlphabet() {
         return alphas;
@@ -131,16 +171,18 @@ public class DKA {
         for (var trans : transitionFunction.entrySet()) {
             var qFrom = trans.getKey().getKey();
             var alpha = trans.getKey().getValue();
-            var qTo = trans.getValue();
+            var qsTo = trans.getValue();
             checkState(qFrom);
-            checkState(qTo);
+            for (var qTo : qsTo) {
+                checkState(qTo);
+            }
             if (!alphas.contains(alpha)) {
                 throw new DKAInitException(alpha + " not in alphabet: " + alphas.toString());
             }
         }
     }
 
-    public DKA() {}
+    private DKA() {}
 
     public boolean isSame(DKA other) {
         return q0.equals(other.q0) &&
@@ -150,21 +192,21 @@ public class DKA {
                 this.transitionFunction.equals(other.transitionFunction);
     }
 
-    public void init(Reader reader) throws IOException, DKAInitException {
-        BufferedReader bufferedReader = new BufferedReader(reader);
-        initListChars(bufferedReader, alphas);
+    private static DKA readDKA(BufferedReader bufferedReader) throws IOException, DKAInitException {
+        DKA dka = new DKA();
+        initListChars(bufferedReader, dka.alphas);
 
         String strN = bufferedReader.readLine();
         int n = Integer.parseInt(strN);
         for (int i = 0; i < n; i++) {
             String string = bufferedReader.readLine();
             if (i == 0) {
-                q0 = string;
+                dka.q0 = string;
             }
-            states.add(string);
+            dka.states.add(string);
         }
 
-        initListStrings(bufferedReader, terminalStates);
+        initListStrings(bufferedReader, dka.terminalStates);
         String strK = bufferedReader.readLine();
         int k = Integer.parseInt(strK);
         for (int i = 0; i < k; i++) {
@@ -173,10 +215,29 @@ public class DKA {
             String qFrom = tmps[0];
             char alpha = tmps[1].charAt(0);
             String qTo = tmps[2];
-            transitionFunction.put(new AbstractMap.SimpleEntry<>(qFrom, alpha), qTo);
+            addTransition(dka.transitionFunction, qFrom, alpha, qTo);
         }
         //
-        checkDKA();
+        dka.checkDKA();
+        return dka;
+    }
+
+    public static DKA init(String filename) throws IOException, DKAInitException {
+        try (BufferedReader reader = new BufferedReader(
+                new FileReader(filename)
+        )) {
+            String firstStr = reader.readLine();
+            if (firstStr.equals("+") || firstStr.equals("*")) {
+                DKA firstDka = readDKA(reader);
+                DKA secondDka = readDKA(reader);
+                return firstStr.equals("+") ? DKA.union(firstDka, secondDka) : DKA.mult(firstDka, secondDka);
+            }
+        }
+        try (BufferedReader reader = new BufferedReader(
+                new FileReader(filename)
+        )) {
+            return DKA.readDKA(reader);
+        }
     }
 
     /**
@@ -184,15 +245,15 @@ public class DKA {
      * @param str проверяемая строка
      * @return true если строка распознается автоматом, false - иначе
      * */
-    public boolean acceptString(String str) {
-        String curState = this.q0;
-        for (char c : str.toCharArray()) {
-            curState = this.transitionFunction.get(Map.entry(curState, c));
-            if (null == curState) {
-                return false;
-            }
-        }
-        return this.terminalStates.contains(curState);
-    }
+//    public boolean acceptString(String str) {
+//        String curState = this.q0;
+//        for (char c : str.toCharArray()) {
+//            curState = this.transitionFunction.get(Map.entry(curState, c));
+//            if (null == curState) {
+//                return false;
+//            }
+//        }
+//        return this.terminalStates.contains(curState);
+//    }
 
 }

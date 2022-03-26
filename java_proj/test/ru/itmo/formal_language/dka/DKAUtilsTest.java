@@ -15,21 +15,12 @@ class DKAUtilsTest {
     @Test
     void writeDKA() {
         Consumer<String> fun = testFile -> {
-            try (BufferedReader reader = new BufferedReader(
-                    new FileReader("testResources/" + testFile)
-            )) {
-                DKA dka = new DKA();
-                dka.init(reader);
+            try {
+                DKA dka = DKA.init("testResources/" + testFile);
                 String testEqFile = "testResources/" + testFile + "_eq.txt";
                 DKAUtils.writeDKA(dka, testEqFile);
-                try (BufferedReader readerTest = new BufferedReader(
-                        new FileReader(testEqFile)
-                )) {
-                    DKA dkaTest = new DKA();
-                    dkaTest.init(readerTest);
-                    assertTrue(dka.isSame(dkaTest));
-                }
-
+                DKA dkaTest = DKA.init(testEqFile);
+                assertTrue(dka.isSame(dkaTest));
             } catch (IOException | DKAInitException e) {
                 fail();
             }
