@@ -16,4 +16,4 @@
     * Задание надо сопроводить документацией, тестами, и отчетом, в котором указано, кто что сделал. Если не хочется работать в группе -- выбирайте одну из фич и реализуйте ее.
 
 
-[Запись лекции](https://drive.google.com/file/d/11LNXc99v5ub-wJBGctb6lm-dnzscfX77/view?usp=sharing)
+[Запись лекции](https://drive.google.com/file/d/11LNXc99v5ub-wJBGctb6lm-dnzscfX77/view?usp=sharing) 
