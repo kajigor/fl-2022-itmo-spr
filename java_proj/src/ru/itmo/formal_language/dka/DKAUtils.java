@@ -122,6 +122,9 @@ public class DKAUtils {
             }
         }
         Graph g = graph(file).directed();
+        for (var nodeStr : nodesStr) {
+            g = g.with(strToNodes.get(nodeStr));
+        }
         for (var trans : prettyTransitionFun.entrySet()) {
             var qFrom = trans.getKey().getKey();
             var qTo = trans.getKey().getValue();
