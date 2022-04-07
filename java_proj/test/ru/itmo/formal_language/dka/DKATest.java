@@ -17,46 +17,6 @@ class DKATest {
 
     @Test
     void testMultDKA() {
-        // trivial test
-        try {
-            DKA resMult = DKA.init("testResources/test_mult2.txt");
-            DKA resUnion = DKA.init("testResources/test_sum2.txt");
-            assertEquals(Set.of('0', '1', 'a', 'b', 'c'), resMult.getAlphabet());
-            assertEquals(Set.of('0', '1', 'a', 'b', 'c'), resUnion.getAlphabet());
-            Set<String> expectedStates = Set.of(
-                    DKA.multPresent("q_0", "q_0"),
-                    DKA.multPresent("q_0", "q_1"),
-                    DKA.multPresent("q_0", "q_2"),
-                    DKA.multPresent("q_1", "q_0"),
-                    DKA.multPresent("q_1", "q_1"),
-                    DKA.multPresent("q_1", "q_2")
-            );
-            assertEquals(expectedStates, resMult.getStates());
-            assertEquals(expectedStates, resUnion.getStates());
-
-            assertEquals(Map.of(), resMult.getTransitionFunction());
-            assertEquals(Map.of(), resUnion.getTransitionFunction());
-
-            assertEquals(DKA.multPresent("q_0", "q_0"), resMult.getQ0());
-            assertEquals(DKA.multPresent("q_0", "q_0"), resUnion.getQ0());
-
-            assertEquals(Set.of(
-                    DKA.multPresent("q_0", "q_0"),
-                    DKA.multPresent("q_0", "q_2")
-                    ),
-                    resMult.getTerminalStates());
-            assertEquals(Set.of(
-                    DKA.multPresent("q_0", "q_0"),
-                    DKA.multPresent("q_0", "q_1"),
-                    DKA.multPresent("q_0", "q_2"),
-                    DKA.multPresent("q_1", "q_0"),
-                    DKA.multPresent("q_1", "q_2")
-                    ),
-                    resUnion.getTerminalStates());
-        } catch (IOException | DKAInitException e) {
-            fail();
-        }
-
         // norm test
         try {
             DKA resMult = DKA.init("testResources/test_mult1.txt");

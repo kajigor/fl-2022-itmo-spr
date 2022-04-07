@@ -102,15 +102,20 @@ public class DKA {
                 for (var alpha : result.alphas) {
                     var firstNextStates = firstTF.get(Map.entry(firstState, alpha));
                     var secondNextStates = secondTF.get(Map.entry(secondState, alpha));
+                    //
+                    if (firstNextStates == null && !firstDka.getAlphabet().contains(alpha)) {
+                        firstNextStates = List.copyOf(firstDka.getStates());
+                    } else if (secondNextStates == null && !secondDka.getAlphabet().contains(alpha)) {
+                        secondNextStates = List.copyOf(secondDka.getStates());
+                    }
+                    //
                     if (firstNextStates == null || secondNextStates == null) {
                         continue;
                     }
                     for (var firstNext : firstNextStates) {
                         for (var secondNext : secondNextStates) {
-                            if (firstNext != null && secondNext != null) {
-                                addTransition(result.transitionFunction, multPresent(firstState, secondState),
-                                        alpha, multPresent(firstNext, secondNext));
-                            }
+                            addTransition(result.transitionFunction, multPresent(firstState, secondState),
+                                    alpha, multPresent(firstNext, secondNext));
                         }
                     }
                 }
