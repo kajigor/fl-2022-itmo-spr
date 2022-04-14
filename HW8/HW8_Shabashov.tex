@@ -1,0 +1,196 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage[english, russian, shorthands=off]{babel}
+\usepackage{amsmath,amsfonts,amssymb}
+\usepackage{mathtext}
+\usepackage[T2A]{fontenc}
+
+%place for text on the page
+\usepackage[left=20mm, top=30mm, right=20mm, bottom=30mm, nohead]{geometry}
+
+%Для ссылок
+\usepackage{hyperref}
+\hypersetup{
+	colorlinks=true,
+	linkcolor=blue,
+	filecolor=magenta,      
+	urlcolor=green,
+}
+
+% Для картинок
+\usepackage{graphicx}
+\graphicspath{{pictures/}}
+\DeclareGraphicsExtensions{.pdf,.png,.jpg}
+
+% Для рисования в Tikz
+\usepackage{pgf,tikz}
+
+% Tikz library for matrix
+\usetikzlibrary{matrix}
+
+\usepackage{skak}
+
+% d in the integral
+\newcommand{\ud}{\mathrm{d}}
+
+% Для О-большого
+\renewcommand{\O}{\mathcal{O}}
+
+% bold symbols qickly
+\newcommand{\tb}{\boldsymbol}
+
+% increase vertical space in math-align
+\newcommand{\s}{&\\[12pt]}
+
+\usepackage{listings}
+\usepackage{xcolor}
+\colorlet{punct}{red!60!black}
+\definecolor{background}{HTML}{EEEEEE}
+\definecolor{delim}{RGB}{20,105,176}
+\colorlet{numb}{magenta!60!black}
+\lstdefinelanguage{json}{
+	basicstyle=\normalfont\ttfamily,
+	numbers=left,
+	numberstyle=\scriptsize,
+	stepnumber=1,
+	numbersep=8pt,
+	showstringspaces=false,
+	breaklines=true,
+	frame=lines,
+	backgroundcolor=\color{background},
+	literate=
+	*{0}{{{\color{numb}0}}}{1}
+	{1}{{{\color{numb}1}}}{1}
+	{2}{{{\color{numb}2}}}{1}
+	{3}{{{\color{numb}3}}}{1}
+	{4}{{{\color{numb}4}}}{1}
+	{5}{{{\color{numb}5}}}{1}
+	{6}{{{\color{numb}6}}}{1}
+	{7}{{{\color{numb}7}}}{1}
+	{8}{{{\color{numb}8}}}{1}
+	{9}{{{\color{numb}9}}}{1}
+	{:}{{{\color{punct}{:}}}}{1}
+	{,}{{{\color{punct}{,}}}}{1}
+	{\{}{{{\color{delim}{\{}}}}{1}
+	{\}}{{{\color{delim}{\}}}}}{1}
+	{[}{{{\color{delim}{[}}}}{1}
+	{]}{{{\color{delim}{]}}}}{1},
+}
+
+%to fix picture (for [H])
+\usepackage{float}
+
+\title{Homework №8}
+\author{Вадим Шабашов}
+\date{}
+
+\begin{document}
+	
+	\maketitle
+	
+	\section*{Задание 1}
+	
+	{\bfseries }
+	
+	\begin{center}
+		\textbf{Решение:}
+	\end{center}
+
+\begin{enumerate}
+		\item Грамматика из прошлого ДЗ принадлежит к $LL(1)$. Объяснить можно было бы построив таблицу и убедившись, что в ней все ячейки имеют не более 1 правила. Но это уж очень долго... Поэтому попробую словами объяснить, почему по заданной грамматике всегда строится ровно одно левостороннее дерево. Надеюсь, это будет достаточно строго.
+		
+		\item Сперва поймем, что $W$, $B$, $C$, $O$ --- однозначно строят левые деревья, т.к. в них максимум есть один рекурсивный вызов нетерминала в правой части (этот нетерминал потом однозначно раскрывается в парсере).
+		
+		\item $L_L$--- однозначно строит левое дерево, т.к. вызовы $C$ и $W$ --- однозначно строят, а вызов $L_L$ единственный.
+		
+		Это собственно и будет основной идеей доказательства. Мы структурной индукцией проходим снизу вверх. Сначала доказали, что базовые $W$, $B$, $C$ и $O$ выводят левые деревья, затем доказываем, что состоящее из них $L_L$ выводит левое дерево. Итд. Мы как бы "поднимаемся вверх". Но тут надо быть аккуратным: не обязательно нетерминалы, выводящие левые деревья, будут вместе в правой части давать только левое дерево (пример $CC$). Тут важно, что у меня все нетерминалы разделены каким-нибудь нетерминальным символом ($",\{\}$, итд) или же не имеют общих символов вообще (например, $W$ и все остальное). Это гарантирует, что разбор будет строиться однозначно. Левое дерево будет единственным. 
+		
+		\item Аналогично доказываем для $L_C$.
+		
+		
+		\item $E_O$ и $E_E$ --- однозначно строят левое дерево, т.к. $C$ и $L_L$ однозначно строят, а также потому, что в них всего один рекурсивный вызов $E_O$ и $E_E$ будет потом.
+		
+		\item Для $A$ --- в нем нет рекурсивных вызовов, а все нетерминалы в правой части однозначно строят дерево. Отсюда $A$ будет однозначно строить левое дерево.
+		
+		\item $L_{AO}$ однозначно строит, потому что $A$ и $O$ --- однозначно строят левое дерево, а также всего один рекурсивный вызов.
+		
+		\item $L_{P}$ однозначно строит, потому что $A$ и $L_{AO}$ --- однозначно строят левое дерево, а также всего один рекурсивный вызов.
+		
+		\item $S$ однозначно строит, потому что $W$ и $L_{P}$ --- однозначно строят левое дерево.
+		
+		
+	
+\end{enumerate}
+
+
+
+	\section*{Задание 2}
+
+{\bfseries Реализовать парсер для вашего языка описаний конечных автоматов (с операциями над ними) при помощи AntLR}
+
+\begin{center}
+	\textbf{Решение:}
+\end{center}
+
+\begin{enumerate}
+	\item Реализацию парсера на ANTLR добавил в файл \texttt{src/task2/Automata.g4}
+	
+	Этот файл, после компиляции командой ниже, создает лексер и парсер в папке  \texttt{src/task2/antlr\_files}:
+	
+	\texttt{antlr4 -Dlanguage=Python3 Automata.g4 -visitor -o antlr\_files}
+	
+	
+	\item Для проверки парсинга написал \texttt{src/task2/task2.py}. В нем передаю файл с автоматом в найденные лексер и парсер, а они сохраняют свой вывод в \texttt{src/task2/result}
+	
+
+	\item Создал два файла: \texttt{src/task2/correct\_example.json} ---  с правильной грамматикой;
+	
+	и \texttt{src/task2/incorrect\_example.json} --- с неправильной грамматикой. Они сохраняют результаты соответственно в \texttt{src/task2/result/log\_correct.json} и \texttt{src/task2/result/log\_incorrect.json}
+	
+	В неправильной грамматике добавил заменил строку \texttt{"is\_dfa": true} на \texttt{"is\_dfa": "Nope"}. В этот момент парсер и падает с ошибкой.
+	
+	\item Для вывода дерева написал свой класс, который обходит построенное синтаксическое дерево и печатает имя каждой вершины и что в ней распарсилось.
+	
+	Также добавил стандартный вывод ANTLR (\texttt{toStringTree})
+	
+	
+\end{enumerate}
+
+
+	\section*{Задание 3}
+
+{\bfseries Промоделировать работу алгоритма $LL(1)$ на грамматике языка арифметических выражений с операциями $+$ и $\cdot$ над целыми числами с естественными приоритетами и ассоциативностью.}
+
+\begin{center}
+	\textbf{Решение:}
+\end{center}
+
+\begin{enumerate}
+	\item Грамматика языка:
+	\[\begin{array}{lll}
+	S & \to & M \;E \\
+	E & \to & + \;M\; E| \varepsilon\\
+	M & \to & B\; R \\
+	R & \to &  \cdot \; B\; R \;|\; \varepsilon \\
+	B & \to & (S) \;|\; 0 \;|\; -\! N\; P \;|\; N\; P  \\
+	P & \to & 0 P\; |\; 1P \;|\; 2P \;|\; 3P \;|\; 4 P \;|\; 5 P \;|\; 6 P \;|\; 7P \;|\; 8P \;|\; 9P \;|\;\varepsilon \\
+	N & \to & 1| 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+	\end{array}\]
+	
+	\item Воспользуемся кодом с сайта:
+	
+	\url{https://www.geeksforgeeks.org/compiler-design-ll1-parser-in-python/}
+	
+	Создал \texttt{src/task3/task3.py}, в котором реализована грамматика. Проверяю работоспособность на строке:
+	
+	\texttt{sample\_input\_string = "( 1 + 1 ) * 2 + ( - 6 )"}
+	
+	Результаты лежат в \texttt{src/task3/result/log.txt}
+	
+\end{enumerate}
+
+
+% \section*{Исправления и доделки}
+
+	
+\end{document}

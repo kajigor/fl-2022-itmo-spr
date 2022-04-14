@@ -1,0 +1,76 @@
+
+Custom print of the tree:
+
+     LC: "1"
+    LC: "0","1"
+        LC: "E"
+       LC: "D","E"
+      LC: "C","D","E"
+     LC: "B","C","D","E"
+    LC: "A","B","C","D","E"
+     LC: "C"
+    LC: "B","C"
+      LL: ["B","0"]
+     LL: ["C","1"],["B","0"]
+      LL: ["D","1"]
+       LL: ["E","1"]
+         LL: ["C","1"]
+        LL: ["B","0"],["C","1"]
+         LL: ["C","0"]
+        EO: "E":[["C","0"]]
+       EO: "D":[["B","0"],["C","1"]],"E":[["C","0"]]
+      EO: "C":[["E","1"]],"D":[["B","0"],["C","1"]],"E":[["C","0"]]
+     EO: "B":[["D","1"]],"C":[["E","1"]],"D":[["B","0"],["C","1"]],"E":[["C","0"]]
+    EO: "A":[["C","1"],["B","0"]],"B":[["D","1"]],"C":[["E","1"]],"D":[["B","0"],["C","1"]],"E":[["C","0"]]
+     LC: 
+      LC: 
+       LC: 
+        LC: 
+         LC: 
+        EE: "E":[]
+       EE: "D":[],"E":[]
+      EE: "C":[],"D":[],"E":[]
+     EE: "B":[],"C":[],"D":[],"E":[]
+    EE: "A":[],"B":[],"C":[],"D":[],"E":[]
+   A: "glossary":["0","1"],"states":["A","B","C","D","E"],"initial_state":"A","terminal_states":["B","C"],"is_dfa":true,"edges":{"A":[["C","1"],["B","0"]],"B":[["D","1"]],"C":[["E","1"]],"D":[["B","0"],["C","1"]],"E":[["C","0"]]},"edges_epsilon":{"A":[],"B":[],"C":[],"D":[],"E":[]}
+       LC: "1"
+      LC: "0","1"
+          LC: "E"
+         LC: "D","E"
+        LC: "C","D","E"
+       LC: "B","C","D","E"
+      LC: "A","B","C","D","E"
+       LC: "C"
+      LC: "B","C"
+        LL: ["B","1"]
+       LL: ["C","1"],["B","1"]
+        LL: ["D","0"]
+         LL: ["E","1"]
+           LL: ["C","1"]
+          LL: ["B","0"],["C","1"]
+           LL: ["C","0"]
+          EO: "E":[["C","0"]]
+         EO: "D":[["B","0"],["C","1"]],"E":[["C","0"]]
+        EO: "C":[["E","1"]],"D":[["B","0"],["C","1"]],"E":[["C","0"]]
+       EO: "B":[["D","0"]],"C":[["E","1"]],"D":[["B","0"],["C","1"]],"E":[["C","0"]]
+      EO: "A":[["C","1"],["B","1"]],"B":[["D","0"]],"C":[["E","1"]],"D":[["B","0"],["C","1"]],"E":[["C","0"]]
+       LC: 
+        LC: "A"
+         LC: 
+           LC: "E"
+          LC: "B","E"
+           LC: 
+          EE: "E":[]
+         EE: "D":["B","E"],"E":[]
+        EE: "C":[],"D":["B","E"],"E":[]
+       EE: "B":["A"],"C":[],"D":["B","E"],"E":[]
+      EE: "A":[],"B":["A"],"C":[],"D":["B","E"],"E":[]
+     A: "glossary":["0","1"],"states":["A","B","C","D","E"],"initial_state":"C","terminal_states":["B","C"],"is_dfa":false,"edges":{"A":[["C","1"],["B","1"]],"B":[["D","0"]],"C":[["E","1"]],"D":[["B","0"],["C","1"]],"E":[["C","0"]]},"edges_epsilon":{"A":[],"B":["A"],"C":[],"D":["B","E"],"E":[]}
+     LAO: "name"
+    LAO: {"glossary":["0","1"],"states":["A","B","C","D","E"],"initial_state":"C","terminal_states":["B","C"],"is_dfa":false,"edges":{"A":[["C","1"],["B","1"]],"B":[["D","0"]],"C":[["E","1"]],"D":[["B","0"],["C","1"]],"E":[["C","0"]]},"edges_epsilon":{"A":[],"B":["A"],"C":[],"D":["B","E"],"E":[]}},"union","name"
+   LP: "name2":[{"glossary":["0","1"],"states":["A","B","C","D","E"],"initial_state":"C","terminal_states":["B","C"],"is_dfa":false,"edges":{"A":[["C","1"],["B","1"]],"B":[["D","0"]],"C":[["E","1"]],"D":[["B","0"],["C","1"]],"E":[["C","0"]]},"edges_epsilon":{"A":[],"B":["A"],"C":[],"D":["B","E"],"E":[]}},"union","name"]
+  LP: "name":{"glossary":["0","1"],"states":["A","B","C","D","E"],"initial_state":"A","terminal_states":["B","C"],"is_dfa":true,"edges":{"A":[["C","1"],["B","0"]],"B":[["D","1"]],"C":[["E","1"]],"D":[["B","0"],["C","1"]],"E":[["C","0"]]},"edges_epsilon":{"A":[],"B":[],"C":[],"D":[],"E":[]}},"name2":[{"glossary":["0","1"],"states":["A","B","C","D","E"],"initial_state":"C","terminal_states":["B","C"],"is_dfa":false,"edges":{"A":[["C","1"],["B","1"]],"B":[["D","0"]],"C":[["E","1"]],"D":[["B","0"],["C","1"]],"E":[["C","0"]]},"edges_epsilon":{"A":[],"B":["A"],"C":[],"D":["B","E"],"E":[]}},"union","name"]
+ S: {"name":{"glossary":["0","1"],"states":["A","B","C","D","E"],"initial_state":"A","terminal_states":["B","C"],"is_dfa":true,"edges":{"A":[["C","1"],["B","0"]],"B":[["D","1"]],"C":[["E","1"]],"D":[["B","0"],["C","1"]],"E":[["C","0"]]},"edges_epsilon":{"A":[],"B":[],"C":[],"D":[],"E":[]}},"name2":[{"glossary":["0","1"],"states":["A","B","C","D","E"],"initial_state":"C","terminal_states":["B","C"],"is_dfa":false,"edges":{"A":[["C","1"],["B","1"]],"B":[["D","0"]],"C":[["E","1"]],"D":[["B","0"],["C","1"]],"E":[["C","0"]]},"edges_epsilon":{"A":[],"B":["A"],"C":[],"D":["B","E"],"E":[]}},"union","name"]}
+------------------------------------------------------------------------------------------
+Built-in print:
+(s { (lp " name " : { (a "glossary" : [ (lc " 0 " , (lc " 1 ")) ] , "states" : [ (lc " A " , (lc " B " , (lc " C " , (lc " D " , (lc " E "))))) ] , "initial_state" : " A " , "terminal_states" : [ (lc " B " , (lc " C ")) ] , "is_dfa" : true , "edges" : { (eo " A " : [ (ll [ " C " , " 1 " ] , (ll [ " B " , " 0 " ])) ] , (eo " B " : [ (ll [ " D " , " 1 " ]) ] , (eo " C " : [ (ll [ " E " , " 1 " ]) ] , (eo " D " : [ (ll [ " B " , " 0 " ] , (ll [ " C " , " 1 " ])) ] , (eo " E " : [ (ll [ " C " , " 0 " ]) ]))))) } , "edges_epsilon" : { (ee " A " : [ lc ] , (ee " B " : [ lc ] , (ee " C " : [ lc ] , (ee " D " : [ lc ] , (ee " E " : [ lc ]))))) }) } , (lp " name2 " : [ (lao { (a "glossary" : [ (lc " 0 " , (lc " 1 ")) ] , "states" : [ (lc " A " , (lc " B " , (lc " C " , (lc " D " , (lc " E "))))) ] , "initial_state" : " C " , "terminal_states" : [ (lc " B " , (lc " C ")) ] , "is_dfa" : false , "edges" : { (eo " A " : [ (ll [ " C " , " 1 " ] , (ll [ " B " , " 1 " ])) ] , (eo " B " : [ (ll [ " D " , " 0 " ]) ] , (eo " C " : [ (ll [ " E " , " 1 " ]) ] , (eo " D " : [ (ll [ " B " , " 0 " ] , (ll [ " C " , " 1 " ])) ] , (eo " E " : [ (ll [ " C " , " 0 " ]) ]))))) } , "edges_epsilon" : { (ee " A " : [ lc ] , (ee " B " : [ (lc " A ") ] , (ee " C " : [ lc ] , (ee " D " : [ (lc " B " , (lc " E ")) ] , (ee " E " : [ lc ]))))) }) } , "union" , (lao " name ")) ])) })
