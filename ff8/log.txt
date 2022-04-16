@@ -1,0 +1,22 @@
+	FIRST	FOLLOW
+E	(0123456789	)$
+T	(0123456789	+$)
+Z	+$	)$
+F	(0123456789	*$+)
+X	*$	+$)
+N	0123456789	*$+)
+R	$0123456789	*$+)
+
+Table:
+	+	*	(	)	0	1	2	3	4	5	6	7	8	9	$
+E	Err	Err	E->TZ	Err	E->TZ	E->TZ	E->TZ	E->TZ	E->TZ	E->TZ	E->TZ	E->TZ	E->TZ	E->TZ	Err
+T	Err	Err	T->FX	Err	T->FX	T->FX	T->FX	T->FX	T->FX	T->FX	T->FX	T->FX	T->FX	T->FX	Err
+Z	Z->+TZ	Err	Err	Z->$	Err	Err	Err	Err	Err	Err	Err	Err	Err	Err	Z->$
+F	Err	Err	F->(E)	Err	F->N	F->N	F->N	F->N	F->N	F->N	F->N	F->N	F->N	F->N	Err
+X	X->$	X->*FX	Err	X->$	Err	Err	Err	Err	Err	Err	Err	Err	Err	Err	X->$
+N	Err	Err	Err	Err	N->0	N->1R	N->2R	N->3R	N->4R	N->5R	N->6R	N->7R	N->8R	N->9R	Err
+R	R->$	R->$	Err	R->$	R->N	R->N	R->N	R->N	R->N	R->N	R->N	R->N	R->N	R->N	R->$
+
+Enter string: 72*(426+8)
+Parsing: E$ -> TZ$ -> FXZ$ -> NXZ$ -> 7RXZ$ -> 7NXZ$ -> 72RXZ$ -> 72XZ$ -> 72*FXZ$ -> 72*(E)XZ$ -> 72*(TZ)XZ$ -> 72*(FXZ)XZ$ -> 72*(NXZ)XZ$ -> 72*(4RXZ)XZ$ -> 72*(4NXZ)XZ$ -> 72*(42RXZ)XZ$ -> 72*(42NXZ)XZ$ -> 72*(426RXZ)XZ$ -> 72*(426XZ)XZ$ -> 72*(426Z)XZ$ -> 72*(426+TZ)XZ$ -> 72*(426+FXZ)XZ$ -> 72*(426+NXZ)XZ$ -> 72*(426+8RXZ)XZ$ -> 72*(426+8XZ)XZ$ -> 72*(426+8Z)XZ$ -> 72*(426+8)XZ$ -> 72*(426+8)Z$ -> 72*(426+8)$ -> 72*(426+8)
+
