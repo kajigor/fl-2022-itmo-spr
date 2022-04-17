@@ -15,3 +15,32 @@
 В `stdout` можно видеть, что приложение ломается при попытке
 распарсить файл на имени автомата с формулировкой:
 "Ожидался токен `STRING`, а получил '<имя_автомата>'"
+
+3. Грамматика
+```
+S -> Expr MaybeSum | e
+Expr -> Atom MaybeMult
+Atom -> (S) | 0 | Num
+MaybeSum -> + Expr MaybeSum | e
+MaybeMult -> * Atom MaybeMult | e
+Num -> [1-9] MaybeNum
+MaybeNum -> [0-9] MaybeNum | e
+```
+
+```haskell
+first S = {e, (, 0-9 }
+first Expr = { (, 0-9 }
+first Atom = { (, 0-9 }
+first Num = { 1-9 }
+first MaybeSum = { +, e }
+first MaybeMult = { *, e }
+first MaybeNum = { 0-9, e }
+
+follow S = { $, ) }
+follow Expr = { +, $, ) }
+follow Atom = { *, +, $, ) }
+follow Num = { *, +, $, ) }
+follow MaybeSum = { $, ) }
+follow MaybeMult = { +, $, ) }
+follow MaybeNum = { *, +, $, ) }
+```
