@@ -1,0 +1,17 @@
+{
+  "auto" : {
+    "alphabet": [1, 0],
+    "states": ["A", "B", "C", "D", "E"],
+    "terminals": ["B", "C"],
+    "start": "A",
+    "sigma": [
+      { "from": "A", "to": "B", "by": 0 },
+      { "from": "A", "to": "B", "by": 1 },
+      { "from": "B", "to": "D", "by": 1 },
+      { "from": "C", "to": "E", "by": 1 },
+      { "from": "D", "to": "B", "by": 0 },
+      { "from": "D", "to": "C", "by": 1 },
+      { "from": "E", "to": "C", "by": 0 }
+    ]
+  }
+}
