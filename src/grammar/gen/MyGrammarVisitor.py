@@ -14,6 +14,11 @@ class MyGrammarVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by MyGrammarParser#block.
+    def visitBlock(self, ctx:MyGrammarParser.BlockContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by MyGrammarParser#item.
     def visitItem(self, ctx:MyGrammarParser.ItemContext):
         return self.visitChildren(ctx)

@@ -17,6 +17,15 @@ class MyGrammarListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by MyGrammarParser#block.
+    def enterBlock(self, ctx:MyGrammarParser.BlockContext):
+        pass
+
+    # Exit a parse tree produced by MyGrammarParser#block.
+    def exitBlock(self, ctx:MyGrammarParser.BlockContext):
+        pass
+
+
     # Enter a parse tree produced by MyGrammarParser#item.
     def enterItem(self, ctx:MyGrammarParser.ItemContext):
         pass

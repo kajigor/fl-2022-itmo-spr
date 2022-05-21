@@ -1,7 +1,13 @@
 grammar MyGrammar;
 
 //-----parser-----
-startRule: (item? NEW_LINE)* item? ;
+startRule
+    : block EOF
+    ;
+
+block
+    : (item NEW_LINE?)* (item NEW_LINE?)?
+    ;
 
 item: ruleStatement
     | token ;

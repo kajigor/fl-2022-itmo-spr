@@ -1,16 +1,31 @@
+
+
+
+
+
+
 //
 // Numbers
 //
 
+
+
+
+
 DIGIT: "0".."9"
+
+
+
+
+
 HEXDIGIT: "a".."f" | "A".."F" | DIGIT
 
 INT: DIGIT+
 SIGNED_INT: ["+" | "-"] INT
 DECIMAL: INT "." INT? | "." INT
 
-_EXP: ("e" | "E") SIGNED_INT
-FLOAT: INT _EXP | DECIMAL _EXP?
+EXP: ("e" | "E") SIGNED_INT
+FLOAT: INT EXP | DECIMAL EXP?
 SIGNED_FLOAT: ["+" | "-"] FLOAT
 
 NUMBER: FLOAT | INT
@@ -19,10 +34,10 @@ SIGNED_NUMBER: ["+" | "-"] NUMBER
 //
 // Strings
 //
-_STRING_INNER: ".*?"
-_STRING_ESC_INNER: _STRING_INNER "(?<!\\)(\\\\)*?"
+STRING_INNER: ".*?"
+STRING_ESC_INNER: STRING_INNER "(?<!\\)(\\\\)*?"
 
-ESCAPED_STRING : '"' _STRING_ESC_INNER '"'
+ESCAPED_STRING : '"' STRING_ESC_INNER '"'
 
 
 //
@@ -49,7 +64,7 @@ NEWLINE: (CR? LF)+
 
 
 // Comments
-SH_COMMENT: "#[^\n]*"
-CPP_COMMENT: "//[^\n]*"
+SH_OCOMMENT: "#[^\n]*"
+CPP_CMMENT: "//[^\n]*"
 C_COMMENT: "/*(.|\n)*?*/"
 SQL_COMMENT: "--[^\n]*"
