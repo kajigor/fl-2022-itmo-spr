@@ -1,27 +1,13 @@
-
-
-
-
-
-
 //
 // Numbers
 //
 
-
-
-
-
 DIGIT: "0".."9"
-
-
-
-
 
 HEXDIGIT: "a".."f" | "A".."F" | DIGIT
 
 INT: DIGIT+
-SIGNED_INT: ["+" | "-"] INT
+SIGNED_INT: ["+" | "-"] INT 
 DECIMAL: INT "." INT? | "." INT
 
 EXP: ("e" | "E") SIGNED_INT
@@ -34,11 +20,13 @@ SIGNED_NUMBER: ["+" | "-"] NUMBER
 //
 // Strings
 //
+
 STRING_INNER: ".*?"
 STRING_ESC_INNER: STRING_INNER "(?<!\\)(\\\\)*?"
 
 ESCAPED_STRING : '"' STRING_ESC_INNER '"'
 
+SIMPLE_TEST : ((('a' | 'b'))) 'c'{4, 6}
 
 //
 // Names (Variables)

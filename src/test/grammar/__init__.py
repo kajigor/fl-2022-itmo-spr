@@ -4,6 +4,8 @@ from antlr4.tree.Trees import Trees
 from src.grammar.gen.MyGrammarLexer import MyGrammarLexer
 from src.grammar.gen.MyGrammarParser import MyGrammarParser
 from src.grammar.gen.MyGrammarListener import MyGrammarListener
+from src.mapper.TreeMapper import make_dict
+from pprint import pprint
 
 
 def main(argv):
@@ -13,7 +15,8 @@ def main(argv):
     parser = MyGrammarParser(stream)
     tree = parser.startRule()
 
-    print(Trees.toStringTree(tree, None, parser))
+    res_dict = make_dict(tree)
+    pprint(res_dict)
 
     printer = MyGrammarListener()
     walker = ParseTreeWalker()
