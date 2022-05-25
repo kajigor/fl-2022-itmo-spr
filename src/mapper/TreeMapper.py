@@ -75,6 +75,10 @@ class Rule:
     def val(self):
         return self.__value
 
+    def rename(self, val):
+        self.__value = val
+        return self
+
     def setMod(self, m):
         self.__mods = m
 
