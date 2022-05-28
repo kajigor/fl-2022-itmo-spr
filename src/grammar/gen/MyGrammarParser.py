@@ -107,7 +107,7 @@ class MyGrammarParser ( Parser ):
         self.checkVersion("4.10.1")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
-
+        self._errHandler = BailErrorStrategy()
 
 
 

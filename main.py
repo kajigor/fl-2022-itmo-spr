@@ -1,3 +1,5 @@
+from antlr4.error.Errors import ParseCancellationException
+
 from src.test.grammar import main as tmain
 import sys
 from antlr4 import FileStream, CommonTokenStream
@@ -7,12 +9,13 @@ from src.mapper.TreeMapper import make_dict
 from pprint import pprint
 from src.normal_form.transforms import transform
 
+
 def console(args):
-    if len(args)==1:
+    if len(args) == 1:
         print("No file specified!")
         return
-    if(args[1]=='test'):
-        tmain([args[0]]+args[2:])
+    if args[1] == 'test':
+        tmain([args[0]] + args[2:])
         return
     try:
         input = FileStream(args[1])
@@ -24,8 +27,7 @@ def console(args):
         res_dict = make_dict(tree)
         pprint(res_dict)
 
-    except parser.ParseError as e:
-        print(e.message)
+    except ParseCancellationException:
         return
 
     cnf_dict, name_of_file = transform(res_dict)
@@ -35,10 +37,10 @@ def console(args):
             command = arguments[0]
             if command == "exit":
                 return
-            elif command == "cnf": 
+            elif command == "cnf":
                 # нормальная форма Хомского, напечатать
                 pprint(cnf_dict)
-            elif command == "cnfSteps": 
+            elif command == "cnfSteps":
                 # напечатать шаги преобразований в Хомского
                 with open(name_of_file) as f:
                     while True:
@@ -63,6 +65,6 @@ def console(args):
         else:
             print("Not enough arguments")
 
+
 if __name__ == '__main__':
     console(sys.argv)
-
