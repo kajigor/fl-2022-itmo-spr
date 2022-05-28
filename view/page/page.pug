@@ -1,0 +1,88 @@
+doctype html
+html(lang="en, ru")
+    head
+        meta(charset="UTF-8")
+        meta(name="viewport", content="width=device-width, initial-scale=1.0")
+        title Document
+        style 
+            include ./page.css
+    body 
+
+        mixin dictblock(dict)
+            .dict-block
+                each val, key in dict
+                    .dict-block-line
+                        .dict-block-key= key
+                        .dict-block-val
+                            each item in val
+                                if item.terminal
+                                    span.green= item.val
+                                else    
+                                    span.not-green= item.val
+
+        .main
+
+            .logo
+                h1 Report
+                .small Smth info here
+
+            .section 
+                .step
+                    .step-number 1
+                    .step-name Считанные данные
+
+                .content
+                    .start-node Стартовый нетерменал <span>#{initial.start}</span>
+                    +dictblock(initial.dict)
+                    
+
+            .section
+                .step
+                    .step-number 2
+                    .step-name Приведение к нормальной форме Хомского
+
+                .content
+                    .transformation-result
+                        .tr-title Финальная форма
+
+                        +dictblock(transform['five'].dict)
+                    
+                    .transformation-process-title
+                    .transformation-process
+                            each val, key in transform
+                                .transformation-step 
+                                    .tr-step-name= key
+                                    .tr-step-info= transform[key].info
+                                    +dictblock(transform[key].dict)
+
+            if cyk
+                .section 
+                    .step 
+                        .step-number 3
+                        .step-name Проверка принадлежности
+
+                    .content
+                        each item, ch_num in cyk.checks
+                            .check-block
+                                .check-word-block
+                                    .check-word= item.word
+                                    if item.verdict
+                                        .check-verdict.ch-gr +
+                                    else
+                                        .check-verdict.ch-rd -
+
+                                .check-btns
+                                    button.btn.reset-btn(data-indx=ch_num) Restart
+                                    button.btn.prev-btn(data-indx=ch_num) Prev
+                                    button.btn.post-btn(data-indx=ch_num) Next
+                                    button.btn.final-btn(data-indx=ch_num) Final
+                                    input.slider(type="range", name="range", min=0, max=item.steps, value=item.steps)
+
+                                .check-matrix
+                                    each line, i in item.result
+                                        .check-matrix-line
+                                            each cell, j in line
+                                                .check-matrix-cell(id="r_" + ch_num + "_cell_" + i + "_" + j)= cell
+
+        script 
+            include ./page.js

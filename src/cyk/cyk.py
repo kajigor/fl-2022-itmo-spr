@@ -1,7 +1,4 @@
 
-from pprint import pprint
-
-
 def cyk(dct, word, report):
 
     cursor = report.section('cyk')
@@ -29,10 +26,10 @@ def cyk(dct, word, report):
 
         return res
 
-    steps = []
+    steps = 0
     matrix = [[]]
     for i, l in enumerate(word):
-        steps.append([0, i, []])
+        steps += 1
         matrix[0].append(find(l))
     
     i = 1
@@ -42,21 +39,28 @@ def cyk(dct, word, report):
         for pos in range(len(word) - i):
             cell = []
             for j in range(i):
+                steps += 1
                 c1 = matrix[j][pos]
                 c2 = matrix[i - j - 1][pos + 1 + j]
                 find_steps.append([[j, pos], [i - j - 1, [pos + 1 + j]]])
                 for n1 in c1:
                     for n2 in c2:
                         cell = cell + find(n1,n2)
-            steps.append([i, pos, find_steps])
             line.append(cell)
+
+        for _ in range(i):
+            line.append([])
 
         i += 1
         matrix.append(line)
     
-    cursor.part('steps').set_val(steps)
-    cursor.part('result').set_val(matrix)
-    cursor.part('verdict').set_val('_START' in matrix[len(word) - 1][0])
+    meta = {}
+    meta['word'] = word
+    meta['steps'] = steps
+    meta['result'] = matrix
+    meta['verdict'] = '_START' in matrix[len(word) - 1][0]
+
+    cursor.part('checks').append(meta)
 
     return matrix
 

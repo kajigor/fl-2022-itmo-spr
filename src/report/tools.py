@@ -42,7 +42,6 @@ class Selector:
 
         obj[last] = val
         
-        
     def set_val(self, val):
         self.__set_path__(val)
 
@@ -59,6 +58,28 @@ class Selector:
         for n in self.__paths:
             obj = obj[n]
         return obj
+
+    def append(self, val):
+        self.__check_path__()
+
+        if not self.__section in self.report.body:
+            self.report.body[self.__section] = {}
+        
+        paths = [self.__attribute] + self.__paths
+        last = paths.pop()
+        obj = self.report.body[self.__section]
+    
+        for n in paths:
+            if n not in obj:
+                obj[n] = {}
+            obj = obj[n]
+
+        if last not in obj:
+            obj[last] = [val]
+        elif not isinstance(obj[last], list):
+            raise "Not a list"
+        else:
+            obj[last].append(val)
 
 class Report:
 

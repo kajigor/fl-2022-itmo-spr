@@ -1,6 +1,6 @@
+import subprocess
 from antlr4.error.Errors import ParseCancellationException
 from src.cyk.cyk import cyk
-from src.report.render import make_report
 from src.report.tools import Report
 
 from src.test.grammar import main as tmain
@@ -12,6 +12,7 @@ from src.mapper.TreeMapper import make_dict
 from pprint import pprint
 from src.normal_form.transforms import transform
 
+import pathlib
 
 def console(args):
 
@@ -59,9 +60,11 @@ def console(args):
                             break
                         # выводим строку
                         print(line.strip())
-            elif command == 'render':
+            elif command == 'save':
                 report.save()
-                make_report()
+                file = pathlib.Path(__file__).parent.resolve().joinpath('view','generator.js')
+                subprocess.run(['node', file, 'data.json', 'report.html'])
+                print('Done!')
             else:
                 print(f"Command {command} not found")
 
