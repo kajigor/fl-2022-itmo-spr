@@ -2,6 +2,7 @@ from pprint import pprint
 from copy import deepcopy
 import re
 from src.mapper.TreeMapper import ContextAnd, ContextOr, Rule, Epsilon
+from src.report.tools import Report
 
 
 
@@ -463,26 +464,48 @@ def delete_right_terminals(start_dict):
     return res_dict
 
 
-def transform(start_dict, start_name='STRING'):
+def transform(start_dict, start_name, report):    
     name_of_res_file = f'cnf_steps_{start_name}.txt'
+
+    cursor = report.section('transform')
     with open(name_of_res_file, 'w') as res_file:
         res_file.write('start rules:\n')
         pprint(start_dict, stream=res_file)
         res_dict = delete_useless_non_terminal(start_dict, start_name)
         res_file.write('\nremove all unreachable and nongenerating rules:\n')
+        
+        cursor.part('one').then('info').set_val('remove all unreachable and nongenerating rules')
+        cursor.part('one').then('dict').set_dict(res_dict)
+
         pprint(res_dict, stream=res_file)
         res_dict = delete_long_right_part(res_dict)
         res_file.write('\n replace all long rules:\n')
+
+        cursor.part('two').then('info').set_val('replace all long rules')
+        cursor.part('two').then('dict').set_dict(res_dict)
+
         pprint(res_dict, stream=res_file)
         res_dict = delete_epsilons(res_dict, start_name)
         res_file.write('\ndelete epsilon rules:\n')
+ 
+        cursor.part('three').then('info').set_val('delete epsilon rules')
+        cursor.part('three').then('dict').set_dict(res_dict)
+
         pprint(res_dict, stream=res_file)
         res_dict = delete_chain_products(res_dict)
         res_dict = delete_useless_non_terminal(res_dict, '_START')
         res_file.write('\nremove all chain products:\n')
+
+        cursor.part('four').then('info').set_val('remove all chain products')
+        cursor.part('four').then('dict').set_dict(res_dict)
+
         pprint(res_dict, stream=res_file)
         res_dict = delete_right_terminals(res_dict)
         res_file.write('\ndelete terminals in the long right parts:\n')
+        
+        cursor.part('five').then('info').set_val('delete terminals in the long right parts')
+        cursor.part('five').then('dict').set_dict(res_dict)
+
         pprint(res_dict, stream=res_file)
         # нужно ли еще раз почистить от недостижимых вершин?
         #res_dict = delete_useless_non_terminal(res_dict, '_START')

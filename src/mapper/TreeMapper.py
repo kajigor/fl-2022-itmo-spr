@@ -452,7 +452,11 @@ def make_dict(node):
 
         if where(node, MyGrammarParser.RULE_value, 1):
             if not where(node.getChild(0), MyGrammarParser.RULE_name):
-                return Rule(node.getChild(0).getText()[1:-1], True)
+                text = node.getChild(0).getText()[1:-1]
+                storage = ContextAnd()
+                for letter in text:
+                    storage.add(Rule(letter, True))
+                return storage
             else:
                 return make_dict_inner(node.getChild(0))
 
