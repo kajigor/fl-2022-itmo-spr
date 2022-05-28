@@ -1,4 +1,2 @@
 
-A : 'a' 'b' | 'c'
-B : 'a' 'b' | 'c'
-C : A B C
+A : 'abc' | 'abcde'

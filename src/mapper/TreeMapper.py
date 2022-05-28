@@ -282,12 +282,15 @@ def make_dict(node):
     side_dict = {}
     name_var = 0
 
+    start_item = None
+
     def take_name():
         nonlocal name_var
         name_var += 1
         return f"${name_var}" 
 
     def make_dict_inner(node):
+        nonlocal start_item
         if where(node, MyGrammarParser.RULE_startRule):
             return make_dict_inner(node.children[0])
         if where(node, MyGrammarParser.RULE_block):
@@ -309,6 +312,8 @@ def make_dict(node):
 
         if where(node, MyGrammarParser.RULE_token) or where(node, MyGrammarParser.RULE_ruleStatement):
             key = node.children[0].getText()
+            if start_item is None:
+                start_item = key
             return (key, make_dict_inner(node.children[2]))
             
         if where(node, MyGrammarParser.RULE_contents):
@@ -454,4 +459,5 @@ def make_dict(node):
     res = make_dict_inner(node)
     for key in side_dict:
         res[key] = side_dict[key]
-    return res
+    
+    return start_item, res
