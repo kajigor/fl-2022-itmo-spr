@@ -23,7 +23,6 @@ content: expression* ;
 expression: term (OPERATOR | '{' NUMBER (',' NUMBER)? '}' )? ;
 
 term: '(' contents ')'
-    | '[' contents ']'
     | value ;
 
 value: STRING '..' STRING
@@ -42,8 +41,6 @@ LEFT_BRACE : '{' ;
 RIGHT_BRACE : '}' ;
 LEFT_PAREN : '(' ;
 RIGHT_PAREN : ')' ;
-LEFT_BRACKET : '[' ;
-RIGHT_BRACKET : ']' ;
 COMMA : ',' ;
 DOT : '.' ;
 DOUBLE_DOT : '..' ;

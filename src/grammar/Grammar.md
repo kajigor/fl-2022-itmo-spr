@@ -6,7 +6,8 @@
 
 ## Описание грамматики
 
-* Идентифекаторы состоят из латинских символов, цифр и символа подчеркивания `_`, при этом могут начинаться только с буквы.
+* Нетерминал из левой части первого правила является стартовым
+* Идентификаторы состоят из латинских символов, цифр и символа подчеркивания `_`, при этом могут начинаться только с буквы.
 * Правила пишутся в нижнем регистре, а токены в верхнем
 * Между названием и описанием правила ставится двоеточие
 * Строковые литералы могут быть в двойных или одинарных кавычках.
@@ -21,67 +22,44 @@
     * `|` - оператор альтернативы
     * `{n}` - повторение ровно n раз
     * `{n,m}` - повторение от n до m раз
-    * `[opt ...]` - совпадение с одним из символов из скобок
     * `(...)` - скобки для группировки
-    * `"a".."z"` - диапозон от a до z
+    * `"a".."z"` - диапазон от a до z
 
 ## Пример
 
 Пример распознаваемой грамматики
 ```
-//
-// Numbers
-//
-
 DIGIT: "0".."9"
 HEXDIGIT: "a".."f" | "A".."F" | DIGIT
 
 INT: DIGIT+
-SIGNED_INT: ["+" | "-"] INT
+SIGNED_INT: ("+" | "-")? INT
 DECIMAL: INT "." INT? | "." INT
 
-_EXP: ("e" | "E") SIGNED_INT
-FLOAT: INT _EXP | DECIMAL _EXP?
-SIGNED_FLOAT: ["+" | "-"] FLOAT
+EXP: ("e" | "E") SIGNED_INT
+FLOAT: INT EXP | DECIMAL EXP?
+SIGNED_FLOAT: ("+" | "-")? FLOAT
 
 NUMBER: FLOAT | INT
-SIGNED_NUMBER: ["+" | "-"] NUMBER
+SIGNED_NUMBER: ("+" | "-")? NUMBER
 
-//
-// Strings
-//
-_STRING_INNER: ".*?"
-_STRING_ESC_INNER: _STRING_INNER "(?<!\\)(\\\\)*?"
-
-ESCAPED_STRING : '"' _STRING_ESC_INNER '"'
-
-
-//
-// Names (Variables)
-//
 LCASE_LETTER: "a".."z"
 UCASE_LETTER: "A".."Z"
 
 LETTER: UCASE_LETTER | LCASE_LETTER
 WORD: LETTER+
 
-CNAME: ("_" | LETTER) ("_" | LETTER | DIGIT)*
+
+NAME: ("_" | LETTER) ("_" | LETTER | DIGIT)*
 
 
-//
-// Whitespace
-//
 WS_INLINE: (" " | "\t")+
 WS: "\s"+
+
+
+STRING : '"' (DIGIT | LETTER | WS)* '"'
 
 CR : "\r"
 LF : "\n"
 NEWLINE: (CR? LF)+
-
-
-// Comments
-SH_COMMENT: "#[^\n]*"
-CPP_COMMENT: "//[^\n]*"
-C_COMMENT: "/*(.|\n)*?*/"
-SQL_COMMENT: "--[^\n]*"
 ```

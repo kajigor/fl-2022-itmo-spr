@@ -75,10 +75,6 @@ class Rule:
     def val(self):
         return self.__value
 
-    def rename(self, val):
-        self.__value = val
-        return self
-
     def setMod(self, m):
         self.__mods = m
 
@@ -208,14 +204,25 @@ class ContextOr:
         return self.__items
 
     def add(self, item):
+
+        def contains(i):
+            if i.type() != 'RULE':
+                return False
+            for j in self.__items:
+                if i.type() == j.type() and i.isTerminal() == j.isTerminal() and i.val() == j.val():
+                    return True
+            return False
+
         item = item.make_final()
         if len(item) == 0:
             return self
         if item.type() == 'OR':
             for i in item.getItems():
-                self.__items.append(i)
+                if not contains(i):
+                    self.__items.append(i)
             return self
-        
+        if contains(item):
+            return self
         self.__items.append(item)
         return self
 
@@ -445,11 +452,7 @@ def make_dict(node):
 
         if where(node, MyGrammarParser.RULE_value, 1):
             if not where(node.getChild(0), MyGrammarParser.RULE_name):
-                text = node.getChild(0).getText()[1:-1]
-                storage = ContextAnd()
-                for letter in text:
-                    storage.add(Rule(letter, True))
-                return storage
+                return Rule(node.getChild(0).getText()[1:-1], True)
             else:
                 return make_dict_inner(node.getChild(0))
 
