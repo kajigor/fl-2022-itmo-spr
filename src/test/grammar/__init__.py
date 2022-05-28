@@ -5,6 +5,7 @@ from src.grammar.gen.MyGrammarLexer import MyGrammarLexer
 from src.grammar.gen.MyGrammarParser import MyGrammarParser
 from src.grammar.gen.MyGrammarListener import MyGrammarListener
 from src.mapper.TreeMapper import make_dict
+from src.mapper.tools import is_same, remove_duplicates
 from pprint import pprint
 
 
@@ -16,6 +17,7 @@ def main(argv):
     tree = parser.startRule()
 
     res_dict = make_dict(tree)
+    remove_duplicates(res_dict)
     pprint(res_dict)
 
     printer = MyGrammarListener()

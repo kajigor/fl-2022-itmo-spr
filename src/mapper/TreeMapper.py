@@ -204,14 +204,25 @@ class ContextOr:
         return self.__items
 
     def add(self, item):
+
+        def contains(i):
+            if i.type() != 'RULE':
+                return False
+            for j in self.__items:
+                if i.type() == j.type() and i.isTerminal() == j.isTerminal() and i.val() == j.val():
+                    return True
+            return False
+
         item = item.make_final()
         if len(item) == 0:
             return self
         if item.type() == 'OR':
             for i in item.getItems():
-                self.__items.append(i)
+                if not contains(i):
+                    self.__items.append(i)
             return self
-        
+        if contains(item):
+            return self
         self.__items.append(item)
         return self
 
