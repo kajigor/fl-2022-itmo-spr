@@ -42,6 +42,9 @@ def console(args):
 
     cnf_dict, name_of_file = transform(res_dict, start_item, report)
 
+    if len(cnf_dict) == 0:
+        print("When reduced to CNF, we got an empty grammar")
+
     while True:
         arguments = sys.stdin.readline().split(maxsplit=1)
         if len(arguments) == 1:

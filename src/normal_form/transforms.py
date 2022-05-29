@@ -161,6 +161,8 @@ def delete_useless_non_terminal(start_dict, start_name):
     Оба шага выполняются неоптимизированно за O(n^2), можно улучшить
     """
     res_dict = delete_nongenerating(start_dict)
+    if len(res_dict) == 0:
+        return res_dict
     res_dict = delete_unreachable(res_dict, start_name)
     return res_dict
 
@@ -242,7 +244,6 @@ def find_epsilon_rules(start_dict):
             break
         res += step_res
     return res
-
 
 def deleteNonTerminal(rules, nonterm):
     if rules.type() in ['EPSILON', 'RULE']:
@@ -478,6 +479,9 @@ def transform(start_dict, start_name, report):
         cursor.part('one').then('dict').set_dict(res_dict)
 
         pprint(res_dict, stream=res_file)
+        if len(res_dict)==0:
+            return res_dict, name_of_res_file
+
         res_dict = delete_long_right_part(res_dict)
         res_file.write('\n replace all long rules:\n')
 
@@ -485,13 +489,20 @@ def transform(start_dict, start_name, report):
         cursor.part('two').then('dict').set_dict(res_dict)
 
         pprint(res_dict, stream=res_file)
+        if len(res_dict)==0:
+            return res_dict, name_of_res_file
+
         res_dict = delete_epsilons(res_dict, start_name)
+        res_dict = delete_useless_non_terminal(res_dict, '_START')
         res_file.write('\ndelete epsilon rules:\n')
  
         cursor.part('three').then('info').set_val('delete epsilon rules')
         cursor.part('three').then('dict').set_dict(res_dict)
 
         pprint(res_dict, stream=res_file)
+        if len(res_dict)==0:
+            return res_dict, name_of_res_file
+
         res_dict = delete_chain_products(res_dict)
         res_dict = delete_useless_non_terminal(res_dict, '_START')
         res_file.write('\nremove all chain products:\n')
@@ -500,6 +511,9 @@ def transform(start_dict, start_name, report):
         cursor.part('four').then('dict').set_dict(res_dict)
 
         pprint(res_dict, stream=res_file)
+        if len(res_dict)==0:
+            return res_dict, name_of_res_file
+
         res_dict = delete_right_terminals(res_dict)
         res_file.write('\ndelete terminals in the long right parts:\n')
         
@@ -507,6 +521,8 @@ def transform(start_dict, start_name, report):
         cursor.part('five').then('dict').set_dict(res_dict)
 
         pprint(res_dict, stream=res_file)
+        if len(res_dict)==0:
+            return res_dict, name_of_res_file
         # нужно ли еще раз почистить от недостижимых вершин?
         #res_dict = delete_useless_non_terminal(res_dict, '_START')
 
