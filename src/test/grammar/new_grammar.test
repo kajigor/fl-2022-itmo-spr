@@ -1,4 +1,7 @@
-
-A : 'a' 'b' | 'c'
-B : 'a' 'b' | 'c'
-C : A B C
+S : A B
+A : C D | C F
+B : 'c' | E B
+C : 'a'
+D : 'b'
+E : 'c'
+F : A D
