@@ -7,10 +7,10 @@ def cyk(dct, word, report):
 
         def inner_find(rule):
             if (rule.type() == 'RULE') and (b is None):
-                return (rule.val() == a) and (rule.isTerminal() == True) 
+                return (rule.val() == a['val']) and (rule.isTerminal() == True) 
 
             if (rule.type() == 'AND') and (b is not None):
-                return (rule[0].val() == a) and (rule[1].val() == b)
+                return (rule[0].val() == a['val']) and (rule[1].val() == b['val'])
 
             if rule.type() == 'OR':
                 for r in rule.getItems():
@@ -30,7 +30,11 @@ def cyk(dct, word, report):
     matrix = [[]]
     for i, l in enumerate(word):
         steps += 1
-        matrix[0].append(find(l))
+        found = find({ 'val' : l })
+        res = []
+        for r in found:
+            res.append({ 'val' : r, 'step' : -1 })
+        matrix[0].append(res)
     
     i = 1
     while i < len(word):
@@ -45,7 +49,9 @@ def cyk(dct, word, report):
                 find_steps.append([[j, pos], [i - j - 1, [pos + 1 + j]]])
                 for n1 in c1:
                     for n2 in c2:
-                        cell = cell + find(n1,n2)
+                        found = find(n1,n2)
+                        for f in found:
+                            cell.append({ 'val' : f, 'step' : j })
             line.append(cell)
 
         for _ in range(i):
@@ -58,10 +64,17 @@ def cyk(dct, word, report):
     meta['word'] = word
     meta['steps'] = steps
     meta['result'] = matrix
-    meta['verdict'] = '_START' in matrix[len(word) - 1][0]
+
+    result = False
+    for item in matrix[len(word) - 1][0]:
+        if item['val'] == '_START':
+            result = True
+            break
+    
+    meta['verdict'] = result
 
     cursor.part('checks').append(meta)
 
-    return matrix
+    return result
 
     

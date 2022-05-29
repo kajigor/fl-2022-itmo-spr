@@ -5,16 +5,6 @@ const fs = require('fs');
 
 const data = JSON.parse(fs.readFileSync(process.argv[2], 'utf-8'));
 
-if (data.cyk) {
-    for (const ch of data.cyk.checks) {
-        for (let i = 0; i < ch.result.length; ++i) {
-            for (let j = 0; j < ch.result[i].length; ++j) {
-                ch.result[i][j] = ch.result[i][j].join(', ');
-            }
-        }
-    }
-}
-
 function mapDict(dict) {
     for (const key in dict) {
         dict[key] = dict[key].split(' ')

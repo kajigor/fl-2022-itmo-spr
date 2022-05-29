@@ -24,15 +24,15 @@ html(lang="en, ru")
 
             .logo
                 h1 Report
-                .small Smth info here
+                .small Визуализация CYK
 
             .section 
                 .step
                     .step-number 1
-                    .step-name Считанные данные
+                    .step-name Начальный вид 
 
                 .content
-                    .start-node Стартовый нетерменал <span>#{initial.start}</span>
+                    .start-node Стартовый нетерминал <span>#{initial.start}</span>
                     +dictblock(initial.dict)
                     
 
@@ -71,18 +71,41 @@ html(lang="en, ru")
                                     else
                                         .check-verdict.ch-rd -
 
-                                .check-btns
-                                    button.btn.reset-btn(data-indx=ch_num) Restart
-                                    button.btn.prev-btn(data-indx=ch_num) Prev
-                                    button.btn.post-btn(data-indx=ch_num) Next
-                                    button.btn.final-btn(data-indx=ch_num) Final
-                                    input.slider(type="range", name="range", min=0, max=item.steps, value=item.steps)
+                                .check-container
+                                    .check-left
+                                        .dict-block-ch
+                                            each val, key in transform['five'].dict
+                                                .dict-block-line-ch(id='dkey_' + ch_num + '_' + key)
+                                                    .dict-block-key-ch= key
+                                                    .dict-block-val-ch
+                                                        each item in val
+                                                            if item.terminal
+                                                                span.green= item.val
+                                                            else    
+                                                                span.not-green= item.val
 
-                                .check-matrix
-                                    each line, i in item.result
-                                        .check-matrix-line
-                                            each cell, j in line
-                                                .check-matrix-cell(id="r_" + ch_num + "_cell_" + i + "_" + j)= cell
+
+                                    .check-right
+                                        .check-btns
+                                            button.btn.reset-btn(data-indx=ch_num) Restart
+                                            button.btn.prev-btn(data-indx=ch_num) Prev
+                                            button.btn.next-btn(data-indx=ch_num) Next
+                                            button.btn.final-btn(data-indx=ch_num) Final
+                                            input.slider(id="sl_" + ch_num, type="range", name="range", data-size=item.word.length, data-indx=ch_num, min=0, max=item.steps + 1, value=item.steps + 1)
+
+                                        .check-matrix
+                                            .check-matrix-line
+                                                each l in item.word
+                                                    .check-matrix-letter "#{l}"
+                                            each line, i in item.result
+                                                .check-matrix-line
+                                                    each cell, j in line
+                                                        if j > (line.length - i - 1)
+                                                            .disabled-cell
+                                                        else
+                                                            .check-matrix-cell(class="ce_" + ch_num, id="r_" + ch_num + "_cell_" + i + "_" + j)
+                                                                each item in cell
+                                                                    span(data-item=item.step)= item.val
 
         script 
             include ./page.js

@@ -71,7 +71,8 @@ def console(args):
         elif len(arguments) > 1:
             command, arg = arguments
             if command == "check":
-                cyk(cnf_dict, arg[:-1], report)
+                res = cyk(cnf_dict, arg[:-1], report)
+                print('Yes' if res else 'No')
             else:
                 print(f"Command {command} not found")
         else:
