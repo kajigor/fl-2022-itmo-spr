@@ -5,7 +5,6 @@ from src.mapper.TreeMapper import ContextAnd, ContextOr, Rule, Epsilon
 from src.report.tools import Report
 
 
-
 def concat_dicts(dict1, dict2):
     res_dict = dict(dict1)
     keys2 = dict2.keys()
@@ -25,7 +24,8 @@ def concat_dicts(dict1, dict2):
             res_dict[key] = dict2[key]
     return res_dict
 
-#---------------------------------------------
+
+# ---------------------------------------------
 
 def isTerminal(el, nonterms):
     """Функция проверки порождаемости правила 
@@ -209,55 +209,75 @@ def delete_long_right_part(start_dict):
             res_dict = concat_dicts(res_dict, new_dict)
     return res_dict
 
-#--------------------------------------------------------
 
-def isEpsConsist(rules, nonterms):
-    if rules.type()=='EPSILON':
-        return True
+# --------------------------------------------------------
+
+def isEpsConsist(rules, nonterms, full_eps):
+    if rules.type() == 'EPSILON':
+        return True, True
     if rules.type() == 'RULE' and not rules.isTerminal():
-        return (rules.val() in nonterms)
+        res1 = (rules.val() in nonterms)
+        res2 = (rules.val() in full_eps)
+        return res1, res2
+    if rules.type() == 'RULE':  # and rules.isTerminal()
+        return False, False
     if rules.type() == 'AND':
+        res2 = True
         for item in rules.getItems():
-            if not isEpsConsist(item, nonterms):
-                return False
-        return True
+            isCons, isEps = isEpsConsist(item, nonterms, full_eps)
+            if not isCons:
+                return False, False
+            if not isEps:
+                res2 = False
+        return True, res2
     if rules.type() == 'OR':
         items = rules.getItems()
+        res1 = False
+        cou = 0
         for item in items:
-            if isEpsConsist(item, nonterms):
-                return True
-        return False
+            isCons, isEps = isEpsConsist(item, nonterms, full_eps)
+            if isCons:
+                res1 = True
+            if isEps:
+                cou += 1
+        res2 = (cou == len(items))
+        return res1, res2
 
-def find_epsilon_rules(start_dict):
-    res = []
+
+def find_epsilon_consist_rules(start_dict):
+    res_cons = []
+    res_eps = []
     help_dict = dict(start_dict)
     while True:
         # находим все порождающие терминалы
         step_res = []
         step_dict = dict(help_dict)
         for key, rules in step_dict.items():
-            isEps = isEpsConsist(rules, res)
-            if isEps:
+            isEpsCons, isEps = isEpsConsist(rules, res_cons, res_eps)
+            if isEpsCons:
                 step_res.append(key)
                 help_dict.pop(key)
+            if isEps:
+                res_eps.append(key)
         if len(step_res) == 0:
             break
-        res += step_res
-    return res
+        res_cons += step_res
+    return res_cons, res_eps
+
 
 def deleteNonTerminal(rules, nonterm):
     if rules.type() in ['EPSILON', 'RULE']:
         return rules
     if rules.type() == 'AND':
         if len(rules) == 1:
-            return rules 
+            return rules
         items = rules.getItems()
-        if items[0].val() == nonterm:
+        if not items[0].isTerminal() and items[0].val() == nonterm:
             new_rules = ContextOr()
             new_rules.add(rules)
             new_rules.add(items[1])
             return new_rules
-        if items[1].val() == nonterm:
+        if not items[1].isTerminal() and items[1].val() == nonterm:
             new_rules = ContextOr()
             new_rules.add(rules)
             new_rules.add(items[0])
@@ -267,16 +287,48 @@ def deleteNonTerminal(rules, nonterm):
         items = rules.getItems()
         new_rules = ContextOr()
         for item in items:
-            new_items= deleteNonTerminal(item, nonterm)
+            new_items = deleteNonTerminal(item, nonterm)
             new_rules.add(new_items)
         return new_rules
+
+
+def deleteNonTerminalConsistRule(rules, nonterms):
+    if rules.type() == 'EPSILON':
+        return rules
+    if rules.type() == 'RULE':
+        if rules.isTerminal():
+            return rules
+        elif rules.val() in nonterms:
+            return None
+        else:
+            return rules
+    if rules.type() == 'AND':
+        items = rules.getItems()
+        if not items[0].isTerminal() and items[0].val() in nonterms:
+            return None
+        if not items[1].isTerminal() and items[1].val() in nonterms:
+            return None
+        return rules
+    if rules.type() == 'OR':
+        items = rules.getItems()
+        new_rules = ContextOr()
+        for item in items:
+            new_items = deleteNonTerminalConsistRule(item, nonterms)
+            if new_items is not None:
+                new_rules.add(new_items)
+        if len(new_rules) == 0:
+            return None
+        if len(new_rules) == 1:
+            return new_rules.getItems()[0]
+        return new_rules
+
 
 def delete_eps_rule(rules):
     if rules.type() == 'EPSILON':
         return None
     if rules.type() in ['RULE', 'AND']:
         return rules
-    if rules.type() =='OR':
+    if rules.type() == 'OR':
         clear_rules = ContextOr()
         for item in rules.getItems():
             if item.type() != 'EPSILON':
@@ -285,9 +337,12 @@ def delete_eps_rule(rules):
             return clear_rules
         return None
 
+
 def delete_eps_rules(start_dict):
     res_dict = dict()
     for k, r in start_dict.items():
+        if k == '_START':
+            continue
         clear_r = delete_eps_rule(r)
         if clear_r is not None:
             res_dict[k] = clear_r
@@ -296,16 +351,24 @@ def delete_eps_rules(start_dict):
 
 def delete_epsilons(start_dict, start_name):
     res_dict = dict(start_dict)
-    eps_consist = find_epsilon_rules(start_dict)
+    eps_consist, full_eps = find_epsilon_consist_rules(start_dict)
+    help_dict = dict(res_dict)
+    for k, r in help_dict.items():
+        new_r = deleteNonTerminalConsistRule(r, full_eps)
+        if new_r is not None:
+            res_dict[k] = new_r
+        else:
+            res_dict.pop(k)
     for name in eps_consist:
         step_dict = dict(res_dict)
         for k, r in step_dict.items():
             res_dict[k] = deleteNonTerminal(r, name)
     res_dict = delete_eps_rules(res_dict)
     start_rule_name = "_START"
-    # TODO: поменять
+    if start_name in full_eps:
+        new_rule = Epsilon()
+        return {start_rule_name: new_rule}
     new_rule = Rule(start_name, False)
-    # TODO: поменять на маркер стартовой вершины
     if start_name in eps_consist:
         start_rule = ContextOr()
         new_eps = Epsilon()
@@ -316,7 +379,8 @@ def delete_epsilons(start_dict, start_name):
         res_dict[start_rule_name] = new_rule
     return res_dict
 
-#-----------------------------------------------------------------
+
+# -----------------------------------------------------------------
 def delete_self_made_rules(start_dict):
     res_dict = dict()
     for key, rules in start_dict.items():
@@ -332,9 +396,10 @@ def delete_self_made_rules(start_dict):
             for item in items:
                 if item.type() == 'RULE' and item.val() == key:
                     rules.removeVal(item)
-            if len(rules)!=0:
+            if len(rules) != 0:
                 res_dict[key] = rules
     return res_dict
+
 
 def replace_chains_in_rule(rule, start_dict):
     if rule.type() in ['EPSILON', 'AND']:
@@ -355,7 +420,7 @@ def replace_chains_in_rule(rule, start_dict):
             if isC:
                 isChanged = True
         return new_rules, isChanged
-        
+
 
 def replace_all_chains(start_dict):
     res_dict = dict()
@@ -368,7 +433,7 @@ def replace_all_chains(start_dict):
         for key, rules in inner_dict.items():
             new_rule, isCh = replace_chains_in_rule(rules, help_dict)
             notStop = notStop or isCh
-            if not isCh: 
+            if not isCh:
                 res_dict[key] = new_rule
                 help_dict[key] = new_rule
                 start_dict.pop(key)
@@ -377,17 +442,18 @@ def replace_all_chains(start_dict):
             help_dict[key] = new_rule
     return res_dict
 
+
 def delete_chain_products(start_dict):
     res_dict = replace_all_chains(start_dict)
     return res_dict
 
 
-#-------------------------------------------------------------
+# -------------------------------------------------------------
 def find_terminals_in_long_rules(rules):
     res = set()
     if rules.type() != 'OR' and len(rules) == 1:
         return res
-    if rules.type() == 'AND': # and len(rules==2)
+    if rules.type() == 'AND':  # and len(rules==2)
         items = rules.getItems()
         if items[0].isTerminal():
             res.add(items[0].val())
@@ -400,11 +466,13 @@ def find_terminals_in_long_rules(rules):
             res = res | find_terminals_in_long_rules(item)
         return res
 
+
 def find_terminals_in_long_right_part(start_dict):
     res = set()
     for k, r in start_dict.items():
         res = res | find_terminals_in_long_rules(r)
     return res
+
 
 def find_exists_terminal_rules(start_dict):
     res = dict()
@@ -413,10 +481,11 @@ def find_exists_terminal_rules(start_dict):
             res[rule.val()] = k
     return res
 
+
 def update_rule(rule, dict_of_nonterms):
     if rule.type() != 'OR' and len(rule) == 1:
         return rule
-    if rule.type() == 'AND': # and len(rule) == 2
+    if rule.type() == 'AND':  # and len(rule) == 2
         items = rule.getItems()
         new_and = ContextAnd()
         if items[0].isTerminal():
@@ -438,12 +507,13 @@ def update_rule(rule, dict_of_nonterms):
             new_or.add(new_item)
         return new_or
 
-    
+
 def update_with_rules(start_dict, dict_of_nonterms):
     res_dict = dict()
     for k, r in start_dict.items():
         res_dict[k] = update_rule(r, dict_of_nonterms)
     return res_dict
+
 
 def delete_right_terminals(start_dict):
     res_dict = dict(start_dict)
@@ -461,11 +531,11 @@ def delete_right_terminals(start_dict):
     for val, name in new_names.items():
         new_rule = Rule(val, True)
         res_dict[name] = new_rule
-    
+
     return res_dict
 
 
-def transform(start_dict, start_name, report):    
+def transform(start_dict, start_name, report):
     name_of_res_file = f'cnf_steps_{start_name}.txt'
 
     cursor = report.section('transform')
@@ -474,12 +544,12 @@ def transform(start_dict, start_name, report):
         pprint(start_dict, stream=res_file)
         res_dict = delete_useless_non_terminal(start_dict, start_name)
         res_file.write('\nremove all unreachable and nongenerating rules:\n')
-        
+
         cursor.part('one').then('info').set_val('remove all unreachable and nongenerating rules')
         cursor.part('one').then('dict').set_dict(res_dict)
 
         pprint(res_dict, stream=res_file)
-        if len(res_dict)==0:
+        if len(res_dict) == 0:
             return res_dict, name_of_res_file
 
         res_dict = delete_long_right_part(res_dict)
@@ -489,18 +559,17 @@ def transform(start_dict, start_name, report):
         cursor.part('two').then('dict').set_dict(res_dict)
 
         pprint(res_dict, stream=res_file)
-        if len(res_dict)==0:
+        if len(res_dict) == 0:
             return res_dict, name_of_res_file
 
         res_dict = delete_epsilons(res_dict, start_name)
-        res_dict = delete_useless_non_terminal(res_dict, '_START')
         res_file.write('\ndelete epsilon rules:\n')
- 
+
         cursor.part('three').then('info').set_val('delete epsilon rules')
         cursor.part('three').then('dict').set_dict(res_dict)
 
         pprint(res_dict, stream=res_file)
-        if len(res_dict)==0:
+        if len(res_dict) == 0:
             return res_dict, name_of_res_file
 
         res_dict = delete_chain_products(res_dict)
@@ -511,19 +580,19 @@ def transform(start_dict, start_name, report):
         cursor.part('four').then('dict').set_dict(res_dict)
 
         pprint(res_dict, stream=res_file)
-        if len(res_dict)==0:
+        if len(res_dict) == 0:
             return res_dict, name_of_res_file
 
         res_dict = delete_right_terminals(res_dict)
         res_file.write('\ndelete terminals in the long right parts:\n')
-        
+
         cursor.part('five').then('info').set_val('delete terminals in the long right parts')
         cursor.part('five').then('dict').set_dict(res_dict)
 
         pprint(res_dict, stream=res_file)
-        if len(res_dict)==0:
+        if len(res_dict) == 0:
             return res_dict, name_of_res_file
         # нужно ли еще раз почистить от недостижимых вершин?
-        #res_dict = delete_useless_non_terminal(res_dict, '_START')
+        # res_dict = delete_useless_non_terminal(res_dict, '_START')
 
     return res_dict, name_of_res_file

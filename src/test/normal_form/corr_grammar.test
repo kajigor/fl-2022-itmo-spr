@@ -4,7 +4,6 @@ WORD: T{2,4}
 WORD: E
 E: M N|N
 M:
-M: "m"
 N:
 N:"n"{3}
 T: TRESH "a"
