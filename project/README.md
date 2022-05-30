@@ -1,1 +1,0 @@
-#### ANTLR4 demo project
