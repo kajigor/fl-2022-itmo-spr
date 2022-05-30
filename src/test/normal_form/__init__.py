@@ -106,7 +106,23 @@ class TestTransformer(unittest.TestCase):
         self.assertEqual(res_dict, dict())
         os.remove('cnf_steps_STRING.txt')
 
+    def test_transform(self):
+        inp = FileStream('corr_grammar.test')
+        report = Report()
+        lexer = MyGrammarLexer(inp)
+        stream = CommonTokenStream(lexer)
+        parser = MyGrammarParser(stream)
+        tree = parser.startRule()
 
+        start_item, res_dict = make_dict(tree)
+        res_dict, _ = transform(res_dict, start_item, report)
+        trans_res = sorted(res_dict.items()).__str__()
+        print(trans_res)
+        exp_res = '[(\'$1\', $1 LETTER | $2 _0), (\'$2\', \"n\"), ' \
+                  '(\'LETTER\', $2 _0), (\'_0\', $2 $2), ' \
+                  '(\'_START\', #e | LETTER $1 | $1 LETTER | $2 _0 | $2 _0)]'
+        self.assertEqual(trans_res, exp_res)
+        os.remove('cnf_steps_WORD.txt')
 
 
 if __name__ == '__main__':
