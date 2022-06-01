@@ -1,5 +1,6 @@
 from matplotlib.style import context
 from src.grammar.gen.MyGrammarParser import MyGrammarParser
+from src.mapper.tools import pick_a_name, rename
 
 class Epsilon:
     def __init__(self):
@@ -44,10 +45,10 @@ class Epsilon:
         return "EPSILON"
     
     def __str__(self):
-        return "#e"
+        return '""'
 
     def __repr__(self):
-        return "#e"
+        return '""'
 
     def __len__(self):
         return 1
@@ -74,6 +75,9 @@ class Rule:
 
     def val(self):
         return self.__value
+
+    def rename(self, val):
+        self.__value = val
 
     def setMod(self, m):
         self.__mods = m
@@ -453,10 +457,10 @@ def make_dict(node):
         if where(node, MyGrammarParser.RULE_value, 1):
             if not where(node.getChild(0), MyGrammarParser.RULE_name):
                 text = node.getChild(0).getText()[1:-1]
-                storage = ContextAnd()
-                for letter in text:
-                    storage.add(Rule(letter, True))
-                return storage
+                if len(text) == 0:
+                    return Epsilon()
+                else:
+                    return Rule(text, True)
             else:
                 return make_dict_inner(node.getChild(0))
 
@@ -465,6 +469,11 @@ def make_dict(node):
 
     res = make_dict_inner(node)
     for key in side_dict:
-        res[key] = side_dict[key]
+
+        name = pick_a_name('W', res)
+        res[name] = side_dict[key]
+
+        rename(res, key, name)
+        rename(side_dict, key, name)
     
     return start_item, res
