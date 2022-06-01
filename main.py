@@ -1,5 +1,5 @@
 import subprocess
-from antlr4.error.Errors import ParseCancellationException
+from antlr4.error.Errors import ParseCancellationException, LexerNoViableAltException
 from src.cyk.cyk import cyk
 from src.report.tools import Report
 
@@ -8,7 +8,7 @@ import sys
 from antlr4 import FileStream, CommonTokenStream
 from src.grammar.gen.MyGrammarLexer import MyGrammarLexer
 from src.grammar.gen.MyGrammarParser import MyGrammarParser
-from src.mapper.TreeMapper import make_dict
+from src.mapper.TreeMapper import make_dict, where
 from pprint import pprint
 from src.normal_form.transforms import transform
 
@@ -31,13 +31,22 @@ def console(args):
         parser = MyGrammarParser(stream)
         tree = parser.startRule()
 
+        if lexer.exception_occurred:
+            raise lexer.exception_occurred
+        if where(tree.children[0], MyGrammarParser.RULE_block) and not tree.children[0].children:
+            raise ValueError
+
         start_item, res_dict = make_dict(tree)
         
         report.section('initial').part('start').set_val(start_item)
         report.section('initial').part('dict').set_dict(res_dict)
         # pprint(res_dict)
 
-    except ParseCancellationException:
+    except (ParseCancellationException, LexerNoViableAltException):
+        print("Incorrect grammar file", file=sys.stderr)
+        return
+    except ValueError:
+        print("Empty grammar file", file=sys.stderr)
         return
 
     cnf_dict, name_of_file = transform(res_dict, start_item, report)

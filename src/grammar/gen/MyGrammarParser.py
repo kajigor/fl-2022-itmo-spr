@@ -10,37 +10,35 @@ else:
 
 def serializedATN():
     return [
-        4,1,21,98,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
+        4,1,19,93,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
         6,2,7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,1,0,1,0,1,0,1,1,1,1,3,1,28,8,
         1,5,1,30,8,1,10,1,12,1,33,9,1,1,1,1,1,3,1,37,8,1,3,1,39,8,1,1,2,
         1,2,3,2,43,8,2,1,3,1,3,1,3,1,3,1,4,1,4,1,4,1,4,1,5,1,5,1,5,5,5,56,
-        8,5,10,5,12,5,59,9,5,1,6,5,6,62,8,6,10,6,12,6,65,9,6,1,7,1,7,1,7,
-        1,7,1,7,1,7,3,7,73,8,7,1,7,3,7,76,8,7,1,8,1,8,1,8,1,8,1,8,1,8,1,
-        8,1,8,1,8,3,8,87,8,8,1,9,1,9,1,9,1,9,1,9,3,9,94,8,9,1,10,1,10,1,
-        10,0,0,11,0,2,4,6,8,10,12,14,16,18,20,0,1,1,0,13,14,100,0,22,1,0,
-        0,0,2,31,1,0,0,0,4,42,1,0,0,0,6,44,1,0,0,0,8,48,1,0,0,0,10,52,1,
-        0,0,0,12,63,1,0,0,0,14,66,1,0,0,0,16,86,1,0,0,0,18,93,1,0,0,0,20,
-        95,1,0,0,0,22,23,3,2,1,0,23,24,5,0,0,1,24,1,1,0,0,0,25,27,3,4,2,
-        0,26,28,5,18,0,0,27,26,1,0,0,0,27,28,1,0,0,0,28,30,1,0,0,0,29,25,
-        1,0,0,0,30,33,1,0,0,0,31,29,1,0,0,0,31,32,1,0,0,0,32,38,1,0,0,0,
-        33,31,1,0,0,0,34,36,3,4,2,0,35,37,5,18,0,0,36,35,1,0,0,0,36,37,1,
-        0,0,0,37,39,1,0,0,0,38,34,1,0,0,0,38,39,1,0,0,0,39,3,1,0,0,0,40,
-        43,3,6,3,0,41,43,3,8,4,0,42,40,1,0,0,0,42,41,1,0,0,0,43,5,1,0,0,
-        0,44,45,5,13,0,0,45,46,5,1,0,0,46,47,3,10,5,0,47,7,1,0,0,0,48,49,
-        5,14,0,0,49,50,5,1,0,0,50,51,3,10,5,0,51,9,1,0,0,0,52,57,3,12,6,
-        0,53,54,5,11,0,0,54,56,3,12,6,0,55,53,1,0,0,0,56,59,1,0,0,0,57,55,
-        1,0,0,0,57,58,1,0,0,0,58,11,1,0,0,0,59,57,1,0,0,0,60,62,3,14,7,0,
-        61,60,1,0,0,0,62,65,1,0,0,0,63,61,1,0,0,0,63,64,1,0,0,0,64,13,1,
-        0,0,0,65,63,1,0,0,0,66,75,3,16,8,0,67,76,5,12,0,0,68,69,5,2,0,0,
-        69,72,5,19,0,0,70,71,5,8,0,0,71,73,5,19,0,0,72,70,1,0,0,0,72,73,
-        1,0,0,0,73,74,1,0,0,0,74,76,5,3,0,0,75,67,1,0,0,0,75,68,1,0,0,0,
-        75,76,1,0,0,0,76,15,1,0,0,0,77,78,5,4,0,0,78,79,3,10,5,0,79,80,5,
-        5,0,0,80,87,1,0,0,0,81,82,5,6,0,0,82,83,3,10,5,0,83,84,5,7,0,0,84,
-        87,1,0,0,0,85,87,3,18,9,0,86,77,1,0,0,0,86,81,1,0,0,0,86,85,1,0,
-        0,0,87,17,1,0,0,0,88,89,5,15,0,0,89,90,5,10,0,0,90,94,5,15,0,0,91,
-        94,3,20,10,0,92,94,5,15,0,0,93,88,1,0,0,0,93,91,1,0,0,0,93,92,1,
-        0,0,0,94,19,1,0,0,0,95,96,7,0,0,0,96,21,1,0,0,0,11,27,31,36,38,42,
-        57,63,72,75,86,93
+        8,5,10,5,12,5,59,9,5,1,6,4,6,62,8,6,11,6,12,6,63,1,7,1,7,1,7,1,7,
+        1,7,1,7,3,7,72,8,7,1,7,3,7,75,8,7,1,8,1,8,1,8,1,8,1,8,3,8,82,8,8,
+        1,9,1,9,1,9,1,9,1,9,3,9,89,8,9,1,10,1,10,1,10,0,0,11,0,2,4,6,8,10,
+        12,14,16,18,20,0,1,1,0,11,12,94,0,22,1,0,0,0,2,31,1,0,0,0,4,42,1,
+        0,0,0,6,44,1,0,0,0,8,48,1,0,0,0,10,52,1,0,0,0,12,61,1,0,0,0,14,65,
+        1,0,0,0,16,81,1,0,0,0,18,88,1,0,0,0,20,90,1,0,0,0,22,23,3,2,1,0,
+        23,24,5,0,0,1,24,1,1,0,0,0,25,27,3,4,2,0,26,28,5,16,0,0,27,26,1,
+        0,0,0,27,28,1,0,0,0,28,30,1,0,0,0,29,25,1,0,0,0,30,33,1,0,0,0,31,
+        29,1,0,0,0,31,32,1,0,0,0,32,38,1,0,0,0,33,31,1,0,0,0,34,36,3,4,2,
+        0,35,37,5,16,0,0,36,35,1,0,0,0,36,37,1,0,0,0,37,39,1,0,0,0,38,34,
+        1,0,0,0,38,39,1,0,0,0,39,3,1,0,0,0,40,43,3,6,3,0,41,43,3,8,4,0,42,
+        40,1,0,0,0,42,41,1,0,0,0,43,5,1,0,0,0,44,45,5,11,0,0,45,46,5,1,0,
+        0,46,47,3,10,5,0,47,7,1,0,0,0,48,49,5,12,0,0,49,50,5,1,0,0,50,51,
+        3,10,5,0,51,9,1,0,0,0,52,57,3,12,6,0,53,54,5,9,0,0,54,56,3,12,6,
+        0,55,53,1,0,0,0,56,59,1,0,0,0,57,55,1,0,0,0,57,58,1,0,0,0,58,11,
+        1,0,0,0,59,57,1,0,0,0,60,62,3,14,7,0,61,60,1,0,0,0,62,63,1,0,0,0,
+        63,61,1,0,0,0,63,64,1,0,0,0,64,13,1,0,0,0,65,74,3,16,8,0,66,75,5,
+        10,0,0,67,68,5,2,0,0,68,71,5,17,0,0,69,70,5,6,0,0,70,72,5,17,0,0,
+        71,69,1,0,0,0,71,72,1,0,0,0,72,73,1,0,0,0,73,75,5,3,0,0,74,66,1,
+        0,0,0,74,67,1,0,0,0,74,75,1,0,0,0,75,15,1,0,0,0,76,77,5,4,0,0,77,
+        78,3,10,5,0,78,79,5,5,0,0,79,82,1,0,0,0,80,82,3,18,9,0,81,76,1,0,
+        0,0,81,80,1,0,0,0,82,17,1,0,0,0,83,84,5,13,0,0,84,85,5,8,0,0,85,
+        89,5,13,0,0,86,89,3,20,10,0,87,89,5,13,0,0,88,83,1,0,0,0,88,86,1,
+        0,0,0,88,87,1,0,0,0,89,19,1,0,0,0,90,91,7,0,0,0,91,21,1,0,0,0,11,
+        27,31,36,38,42,57,63,71,74,81,88
     ]
 
 class MyGrammarParser ( Parser ):
@@ -53,13 +51,12 @@ class MyGrammarParser ( Parser ):
 
     sharedContextCache = PredictionContextCache()
 
-    literalNames = [ "<INVALID>", "':'", "'{'", "'}'", "'('", "')'", "'['", 
-                     "']'", "','", "'.'", "'..'", "'|'" ]
+    literalNames = [ "<INVALID>", "':'", "'{'", "'}'", "'('", "')'", "','", 
+                     "'.'", "'..'", "'|'" ]
 
     symbolicNames = [ "<INVALID>", "COLON", "LEFT_BRACE", "RIGHT_BRACE", 
-                      "LEFT_PAREN", "RIGHT_PAREN", "LEFT_BRACKET", "RIGHT_BRACKET", 
-                      "COMMA", "DOT", "DOUBLE_DOT", "VBAR", "OPERATOR", 
-                      "RULE", "TOKEN", "STRING", "DOUBLE_QUOTED_STRING", 
+                      "LEFT_PAREN", "RIGHT_PAREN", "COMMA", "DOT", "DOUBLE_DOT", 
+                      "VBAR", "OPERATOR", "RULE", "TOKEN", "STRING", "DOUBLE_QUOTED_STRING", 
                       "SINGLE_QUOTED_STRING", "NEW_LINE", "NUMBER", "WS", 
                       "COMMENT" ]
 
@@ -85,29 +82,27 @@ class MyGrammarParser ( Parser ):
     RIGHT_BRACE=3
     LEFT_PAREN=4
     RIGHT_PAREN=5
-    LEFT_BRACKET=6
-    RIGHT_BRACKET=7
-    COMMA=8
-    DOT=9
-    DOUBLE_DOT=10
-    VBAR=11
-    OPERATOR=12
-    RULE=13
-    TOKEN=14
-    STRING=15
-    DOUBLE_QUOTED_STRING=16
-    SINGLE_QUOTED_STRING=17
-    NEW_LINE=18
-    NUMBER=19
-    WS=20
-    COMMENT=21
+    COMMA=6
+    DOT=7
+    DOUBLE_DOT=8
+    VBAR=9
+    OPERATOR=10
+    RULE=11
+    TOKEN=12
+    STRING=13
+    DOUBLE_QUOTED_STRING=14
+    SINGLE_QUOTED_STRING=15
+    NEW_LINE=16
+    NUMBER=17
+    WS=18
+    COMMENT=19
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
         self.checkVersion("4.10.1")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
-        self._errHandler = BailErrorStrategy()
+
 
 
 
@@ -546,14 +541,17 @@ class MyGrammarParser ( Parser ):
         self.enterRule(localctx, 12, self.RULE_content)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 63
+            self.state = 61 
             self._errHandler.sync(self)
-            _alt = self._interp.adaptivePredict(self._input,6,self._ctx)
+            _alt = 1
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
-                if _alt==1:
+                if _alt == 1:
                     self.state = 60
-                    self.expression() 
-                self.state = 65
+                    self.expression()
+
+                else:
+                    raise NoViableAltException(self)
+                self.state = 63 
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,6,self._ctx)
 
@@ -622,34 +620,34 @@ class MyGrammarParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 66
+            self.state = 65
             self.term()
-            self.state = 75
+            self.state = 74
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [MyGrammarParser.OPERATOR]:
-                self.state = 67
+                self.state = 66
                 self.match(MyGrammarParser.OPERATOR)
                 pass
             elif token in [MyGrammarParser.LEFT_BRACE]:
-                self.state = 68
+                self.state = 67
                 self.match(MyGrammarParser.LEFT_BRACE)
-                self.state = 69
+                self.state = 68
                 self.match(MyGrammarParser.NUMBER)
-                self.state = 72
+                self.state = 71
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if _la==MyGrammarParser.COMMA:
-                    self.state = 70
+                    self.state = 69
                     self.match(MyGrammarParser.COMMA)
-                    self.state = 71
+                    self.state = 70
                     self.match(MyGrammarParser.NUMBER)
 
 
-                self.state = 74
+                self.state = 73
                 self.match(MyGrammarParser.RIGHT_BRACE)
                 pass
-            elif token in [MyGrammarParser.EOF, MyGrammarParser.LEFT_PAREN, MyGrammarParser.RIGHT_PAREN, MyGrammarParser.LEFT_BRACKET, MyGrammarParser.RIGHT_BRACKET, MyGrammarParser.VBAR, MyGrammarParser.RULE, MyGrammarParser.TOKEN, MyGrammarParser.STRING, MyGrammarParser.NEW_LINE]:
+            elif token in [MyGrammarParser.EOF, MyGrammarParser.LEFT_PAREN, MyGrammarParser.RIGHT_PAREN, MyGrammarParser.VBAR, MyGrammarParser.RULE, MyGrammarParser.TOKEN, MyGrammarParser.STRING, MyGrammarParser.NEW_LINE]:
                 pass
             else:
                 pass
@@ -678,12 +676,6 @@ class MyGrammarParser ( Parser ):
 
         def RIGHT_PAREN(self):
             return self.getToken(MyGrammarParser.RIGHT_PAREN, 0)
-
-        def LEFT_BRACKET(self):
-            return self.getToken(MyGrammarParser.LEFT_BRACKET, 0)
-
-        def RIGHT_BRACKET(self):
-            return self.getToken(MyGrammarParser.RIGHT_BRACKET, 0)
 
         def value(self):
             return self.getTypedRuleContext(MyGrammarParser.ValueContext,0)
@@ -714,30 +706,21 @@ class MyGrammarParser ( Parser ):
         localctx = MyGrammarParser.TermContext(self, self._ctx, self.state)
         self.enterRule(localctx, 16, self.RULE_term)
         try:
-            self.state = 86
+            self.state = 81
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [MyGrammarParser.LEFT_PAREN]:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 77
+                self.state = 76
                 self.match(MyGrammarParser.LEFT_PAREN)
-                self.state = 78
+                self.state = 77
                 self.contents()
-                self.state = 79
+                self.state = 78
                 self.match(MyGrammarParser.RIGHT_PAREN)
                 pass
-            elif token in [MyGrammarParser.LEFT_BRACKET]:
-                self.enterOuterAlt(localctx, 2)
-                self.state = 81
-                self.match(MyGrammarParser.LEFT_BRACKET)
-                self.state = 82
-                self.contents()
-                self.state = 83
-                self.match(MyGrammarParser.RIGHT_BRACKET)
-                pass
             elif token in [MyGrammarParser.RULE, MyGrammarParser.TOKEN, MyGrammarParser.STRING]:
-                self.enterOuterAlt(localctx, 3)
-                self.state = 85
+                self.enterOuterAlt(localctx, 2)
+                self.state = 80
                 self.value()
                 pass
             else:
@@ -797,28 +780,28 @@ class MyGrammarParser ( Parser ):
         localctx = MyGrammarParser.ValueContext(self, self._ctx, self.state)
         self.enterRule(localctx, 18, self.RULE_value)
         try:
-            self.state = 93
+            self.state = 88
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,10,self._ctx)
             if la_ == 1:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 88
+                self.state = 83
                 self.match(MyGrammarParser.STRING)
-                self.state = 89
+                self.state = 84
                 self.match(MyGrammarParser.DOUBLE_DOT)
-                self.state = 90
+                self.state = 85
                 self.match(MyGrammarParser.STRING)
                 pass
 
             elif la_ == 2:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 91
+                self.state = 86
                 self.name()
                 pass
 
             elif la_ == 3:
                 self.enterOuterAlt(localctx, 3)
-                self.state = 92
+                self.state = 87
                 self.match(MyGrammarParser.STRING)
                 pass
 
@@ -872,7 +855,7 @@ class MyGrammarParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 95
+            self.state = 90
             _la = self._input.LA(1)
             if not(_la==MyGrammarParser.RULE or _la==MyGrammarParser.TOKEN):
                 self._errHandler.recoverInline(self)

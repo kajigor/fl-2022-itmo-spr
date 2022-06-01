@@ -18,7 +18,7 @@ token: TOKEN ':' contents ;
 
 contents: content (VBAR content)* ;
 
-content: expression* ;
+content: expression+ ;
 
 expression: term (OPERATOR | '{' NUMBER (',' NUMBER)? '}' )? ;
 
