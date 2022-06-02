@@ -165,9 +165,11 @@ def delete_useless_non_terminal(start_dict, start_name):
     Оба шага выполняются неоптимизированно за O(n^2), можно улучшить
     """
     res_dict = delete_nongenerating(start_dict)
-    if len(res_dict) == 0:
-        return res_dict
+    if len(res_dict) == 0 or start_name not in res_dict:
+        return dict()
     res_dict = delete_unreachable(res_dict, start_name)
+    if len(res_dict) == 0 or start_name not in res_dict:
+        return dict()
     return res_dict
 
 
