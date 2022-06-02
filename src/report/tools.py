@@ -95,6 +95,8 @@ class Report:
 
     def save_final(self, name = 'cnf'):
         with open(f"{name}.txt", 'w') as file:
+            if len(self.body['cnf']['dict']) == 0:
+                return
             res = self.body['cnf']['dict']
             text = f"{self.body['initial']['start']} : {res[self.body['initial']['start']]}\n"
             for key in res:
