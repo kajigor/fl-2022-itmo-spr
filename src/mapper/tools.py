@@ -79,3 +79,30 @@ def remove_duplicates(dct):
         else:
             dct.pop(name2)
             rename(dct, name2, name1)
+
+def pick_a_name(prefix, *dct):
+    s = prefix
+    while True:
+        ch = ord('A')
+        while ch <= ord('Z'):
+            contains = False
+            for d in dct:
+                if ((s + chr(ch) in d)):
+                    contains = True
+            
+            if not contains:
+                return s + chr(ch)
+
+            ch += 1
+        s += prefix
+
+
+def pick_a_name_from_set(names):
+    s = 'X'
+    while True:
+        ch = ord('A')
+        while ch <= ord('Z'):
+            if not ((s + chr(ch) in names)):
+                return s + chr(ch)
+            ch += 1
+        s += 'X'

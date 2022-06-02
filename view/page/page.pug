@@ -45,7 +45,7 @@ html(lang="en, ru")
                     .transformation-result
                         .tr-title Финальная форма
 
-                        +dictblock(transform['five'].dict)
+                        +dictblock(cnf.dict)
                     
                     .transformation-process-title
                     .transformation-process
@@ -74,7 +74,7 @@ html(lang="en, ru")
                                 .check-container
                                     .check-left
                                         .dict-block-ch
-                                            each val, key in transform['five'].dict
+                                            each val, key in cnf.dict
                                                 .dict-block-line-ch(id='dkey_' + ch_num + '_' + key)
                                                     .dict-block-key-ch= key
                                                     .dict-block-val-ch

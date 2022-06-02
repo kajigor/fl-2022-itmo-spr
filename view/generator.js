@@ -13,6 +13,7 @@ function mapDict(dict) {
 }
 
 mapDict(data.initial.dict);
+mapDict(data.cnf.dict);
 for (const key in data.transform) {
     mapDict(data.transform[key].dict);
 }

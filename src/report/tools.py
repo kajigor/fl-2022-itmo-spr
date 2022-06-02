@@ -92,3 +92,13 @@ class Report:
     def save(self, name = 'data'):
         with open(f"{name}.json", 'w') as file:
             json.dump(self.body, file)
+
+    def save_final(self, name = 'cnf'):
+        with open(f"{name}.txt", 'w') as file:
+            res = self.body['cnf']['dict']
+            text = f"{self.body['initial']['start']} : {res[self.body['initial']['start']]}\n"
+            for key in res:
+                if key == self.body['initial']['start']:
+                    continue
+                text += f"{key} : {res[key]}\n"
+            file.write(text)

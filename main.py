@@ -51,6 +51,9 @@ def console(args):
 
     cnf_dict, name_of_file = transform(res_dict, start_item, report)
 
+    report.section('cnf').part('dict').set_dict(cnf_dict)
+    report.save_final()
+
     if len(cnf_dict) == 0:
         print("When reduced to CNF, we got an empty grammar")
 
@@ -83,7 +86,7 @@ def console(args):
         elif len(arguments) > 1:
             command, arg = arguments
             if command == "check":
-                res = cyk(cnf_dict, arg[:-1], report)
+                res = cyk(cnf_dict, arg[:-1], start_item, report)
                 print('Yes' if res else 'No')
             else:
                 print(f"Command {command} not found")

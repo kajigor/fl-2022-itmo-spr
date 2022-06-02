@@ -1,5 +1,5 @@
 
-def cyk(dct, word, report):
+def cyk(dct, word, start, report):
 
     cursor = report.section('cyk')
 
@@ -42,6 +42,9 @@ def cyk(dct, word, report):
         find_steps = []
         for pos in range(len(word) - i):
             cell = []
+            tr = find({ 'val' : word[pos:pos + i + 1]})
+            for t in tr:
+                cell.append({ 'val' : t, 'step' : -1 })
             for j in range(i):
                 steps += 1
                 c1 = matrix[j][pos]
@@ -67,7 +70,7 @@ def cyk(dct, word, report):
 
     result = False
     for item in matrix[len(word) - 1][0]:
-        if item['val'] == '_START':
+        if item['val'] == start:
             result = True
             break
     

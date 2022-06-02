@@ -2,6 +2,7 @@ from pprint import pprint
 from copy import deepcopy
 import re
 from src.mapper.TreeMapper import ContextAnd, ContextOr, Rule, Epsilon
+from src.mapper.tools import pick_a_name, pick_a_name_from_set
 from src.report.tools import Report
 
 
@@ -169,41 +170,41 @@ def delete_useless_non_terminal(start_dict, start_name):
 
 # -----------------------------------
 
-def make_new_rules(name, rule, start_rule_num):
+def make_new_rules(name, rule, nontermNames):
     if rule.type() in ['EPSILON', 'RULE']:
-        return {name: rule}, start_rule_num
+        return {name: rule}, nontermNames
 
     if rule.type() == 'AND':
         if len(rule) < 3:
-            return {name: rule}, start_rule_num
+            return {name: rule}, nontermNames
         else:
-            new_rule_name = f"_{start_rule_num}"
+            new_rule_name = pick_a_name_from_set(nontermNames)  # f"_{start_rule_num}"
+            nontermNames.add(new_rule_name)
             new_rule = Rule(new_rule_name, False)
-            start_rule_num += 1
             items = rule.getItems()
             new_and = ContextAnd()
             new_and.add(items[0])
             new_and.add(new_rule)
             res_dict = {name: new_and}
             rule.removeIdx(0)
-            new_dict, start_rule_num = make_new_rules(new_rule_name, rule, start_rule_num)
+            new_dict, nontermNames = make_new_rules(new_rule_name, rule, nontermNames)
             res_dict = concat_dicts(res_dict, new_dict)
-            return res_dict, start_rule_num
+            return res_dict, nontermNames
 
     if rule.type() == 'OR':
         res_dict = {}
         items = rule.getItems()
         for item in items:
-            new_dict, start_rule_num = make_new_rules(name, item, start_rule_num)
+            new_dict, nontermNames = make_new_rules(name, item, nontermNames)
             res_dict = concat_dicts(res_dict, new_dict)
-        return res_dict, start_rule_num
+        return res_dict, nontermNames
 
 
 def delete_long_right_part(start_dict):
     res_dict = dict(start_dict)
     rule_num = 0
     for key, rules in start_dict.items():
-        new_dict, rule_num = make_new_rules(key, rules, rule_num)
+        new_dict, _ = make_new_rules(key, rules, set(start_dict.keys()))
         if len(new_dict) != 1:
             res_dict.pop(key)
             res_dict = concat_dicts(res_dict, new_dict)
@@ -341,8 +342,6 @@ def delete_eps_rule(rules):
 def delete_eps_rules(start_dict):
     res_dict = dict()
     for k, r in start_dict.items():
-        if k == '_START':
-            continue
         clear_r = delete_eps_rule(r)
         if clear_r is not None:
             res_dict[k] = clear_r
@@ -364,19 +363,13 @@ def delete_epsilons(start_dict, start_name):
         for k, r in step_dict.items():
             res_dict[k] = deleteNonTerminal(r, name)
     res_dict = delete_eps_rules(res_dict)
-    start_rule_name = "_START"
     if start_name in full_eps:
         new_rule = Epsilon()
-        return {start_rule_name: new_rule}
-    new_rule = Rule(start_name, False)
+        return {start_name: new_rule}
     if start_name in eps_consist:
-        start_rule = ContextOr()
         new_eps = Epsilon()
-        start_rule.add(new_eps)
-        start_rule.add(new_rule)
-        res_dict[start_rule_name] = start_rule
-    else:
-        res_dict[start_rule_name] = new_rule
+        res_dict[start_name].add(new_eps)
+
     return res_dict
 
 
@@ -520,9 +513,11 @@ def delete_right_terminals(start_dict):
     all_right_terms = find_terminals_in_long_right_part(res_dict)
     dict_of_names = find_exists_terminal_rules(res_dict)
     new_names = dict()
+    taken_names = {}
     for term_name in all_right_terms:
         if term_name not in dict_of_names.keys():
-            new_name = f"__{term_name}"
+            new_name = pick_a_name('U', res_dict, taken_names) # f"__{term_name}"
+            taken_names[new_name] = ''
             dict_of_names[term_name] = new_name
             new_names[term_name] = new_name
 
@@ -573,7 +568,7 @@ def transform(start_dict, start_name, report):
             return res_dict, name_of_res_file
 
         res_dict = delete_chain_products(res_dict)
-        res_dict = delete_useless_non_terminal(res_dict, '_START')
+        res_dict = delete_useless_non_terminal(res_dict, start_name)
         res_file.write('\nremove all chain products:\n')
 
         cursor.part('four').then('info').set_val('remove all chain products')
