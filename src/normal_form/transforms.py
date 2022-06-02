@@ -1,9 +1,12 @@
-from pprint import pprint
-from copy import deepcopy
-import re
+import sys
+
 from src.mapper.TreeMapper import ContextAnd, ContextOr, Rule, Epsilon
 from src.mapper.tools import pick_a_name, pick_a_name_from_set
-from src.report.tools import Report
+
+
+def print_dict(dictionary, file=sys.stdout):
+    for key, value in dictionary.items():
+        print(f"{key}: {value}", file=file)
 
 
 def concat_dicts(dict1, dict2):
@@ -516,7 +519,7 @@ def delete_right_terminals(start_dict):
     taken_names = {}
     for term_name in all_right_terms:
         if term_name not in dict_of_names.keys():
-            new_name = pick_a_name('U', res_dict, taken_names) # f"__{term_name}"
+            new_name = pick_a_name('U', res_dict, taken_names)  # f"__{term_name}"
             taken_names[new_name] = ''
             dict_of_names[term_name] = new_name
             new_names[term_name] = new_name
@@ -536,14 +539,16 @@ def transform(start_dict, start_name, report):
     cursor = report.section('transform')
     with open(name_of_res_file, 'w') as res_file:
         res_file.write('start rules:\n')
-        pprint(start_dict, stream=res_file)
+        print_dict(start_dict, res_file)
+
         res_dict = delete_useless_non_terminal(start_dict, start_name)
         res_file.write('\nremove all unreachable and nongenerating rules:\n')
 
         cursor.part('one').then('info').set_val('remove all unreachable and nongenerating rules')
         cursor.part('one').then('dict').set_dict(res_dict)
 
-        pprint(res_dict, stream=res_file)
+        print_dict(res_dict, res_file)
+
         if len(res_dict) == 0:
             return res_dict, name_of_res_file
 
@@ -553,7 +558,8 @@ def transform(start_dict, start_name, report):
         cursor.part('two').then('info').set_val('replace all long rules')
         cursor.part('two').then('dict').set_dict(res_dict)
 
-        pprint(res_dict, stream=res_file)
+        print_dict(res_dict, res_file)
+
         if len(res_dict) == 0:
             return res_dict, name_of_res_file
 
@@ -563,7 +569,8 @@ def transform(start_dict, start_name, report):
         cursor.part('three').then('info').set_val('delete epsilon rules')
         cursor.part('three').then('dict').set_dict(res_dict)
 
-        pprint(res_dict, stream=res_file)
+        print_dict(res_dict, res_file)
+
         if len(res_dict) == 0:
             return res_dict, name_of_res_file
 
@@ -574,7 +581,8 @@ def transform(start_dict, start_name, report):
         cursor.part('four').then('info').set_val('remove all chain products')
         cursor.part('four').then('dict').set_dict(res_dict)
 
-        pprint(res_dict, stream=res_file)
+        print_dict(res_dict, res_file)
+
         if len(res_dict) == 0:
             return res_dict, name_of_res_file
 
@@ -584,7 +592,8 @@ def transform(start_dict, start_name, report):
         cursor.part('five').then('info').set_val('delete terminals in the long right parts')
         cursor.part('five').then('dict').set_dict(res_dict)
 
-        pprint(res_dict, stream=res_file)
+        print_dict(res_dict, res_file)
+
         if len(res_dict) == 0:
             return res_dict, name_of_res_file
         # нужно ли еще раз почистить от недостижимых вершин?

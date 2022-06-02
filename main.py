@@ -1,21 +1,20 @@
+import pathlib
 import subprocess
-from antlr4.error.Errors import ParseCancellationException, LexerNoViableAltException
-from src.cyk.cyk import cyk
-from src.report.tools import Report
-
-from src.test.grammar import main as tmain
 import sys
+
 from antlr4 import FileStream, CommonTokenStream
+from antlr4.error.Errors import ParseCancellationException, LexerNoViableAltException
+
+from src.cyk.cyk import cyk
 from src.grammar.gen.MyGrammarLexer import MyGrammarLexer
 from src.grammar.gen.MyGrammarParser import MyGrammarParser
 from src.mapper.TreeMapper import make_dict, where
-from pprint import pprint
-from src.normal_form.transforms import transform
+from src.normal_form.transforms import transform, print_dict
+from src.report.tools import Report
+from src.test.grammar import main as tmain
 
-import pathlib
 
 def console(args):
-
     report = Report()
 
     if len(args) == 1:
@@ -37,7 +36,7 @@ def console(args):
             raise ValueError
 
         start_item, res_dict = make_dict(tree)
-        
+
         report.section('initial').part('start').set_val(start_item)
         report.section('initial').part('dict').set_dict(res_dict)
         # pprint(res_dict)
@@ -49,7 +48,12 @@ def console(args):
         print("Empty grammar file", file=sys.stderr)
         return
 
-    cnf_dict, name_of_file = transform(res_dict, start_item, report)
+    try:
+        cnf_dict, name_of_file = transform(res_dict, start_item, report)
+    except KeyError as e:
+        print("Incorrect grammar file:", file=sys.stderr)
+        print(f"No such rule as {e.args[0]}", file=sys.stderr)
+        return
 
     report.section('cnf').part('dict').set_dict(cnf_dict)
     report.save_final()
@@ -65,7 +69,7 @@ def console(args):
                 return
             elif command == "cnf":
                 # нормальная форма Хомского, напечатать
-                pprint(cnf_dict)
+                print_dict(cnf_dict)
             elif command == "cnfSteps":
                 # напечатать шаги преобразований в Хомского
                 with open(name_of_file) as f:
@@ -77,7 +81,7 @@ def console(args):
                         print(line.strip())
             elif command == 'save':
                 report.save()
-                file = pathlib.Path(__file__).parent.resolve().joinpath('view','generator.js')
+                file = pathlib.Path(__file__).parent.resolve().joinpath('view', 'generator.js')
                 subprocess.run(['node', file, 'data.json', 'report.html'])
                 print('Done!')
             else:
