@@ -50,7 +50,7 @@ class TestTransformer(unittest.TestCase):
         _, res_dict = make_dict(tree)
         res_dict = delete_long_right_part(res_dict)
         trans_res = sorted(res_dict.items()).__str__()
-        exp_res = '[(\'A\', \"a\" _0), (\'_0\', \"a\" \"a\")]'
+        exp_res = '[(\'A\', \"a\" XA), (\'XA\', \"a\" \"a\")]'
         self.assertEqual(trans_res, exp_res)
 
     def test_delete_epsilon(self):
@@ -63,7 +63,7 @@ class TestTransformer(unittest.TestCase):
         start_item, res_dict = make_dict(tree)
         res_dict = delete_epsilons(res_dict, start_item)
         trans_res = sorted(res_dict.items()).__str__()
-        exp_res = '[(\'B\', \"b\"), (\'BC\', B | C), (\'C\', \"c\"), (\'_START\', #e | BC)]'
+        exp_res = '[(\'B\', \"b\"), (\'BC\', B | C | \"\"), (\'C\', \"c\")]'
         self.assertEqual(trans_res, exp_res)
 
     def test_chain_products(self):
@@ -90,8 +90,9 @@ class TestTransformer(unittest.TestCase):
         start_item, res_dict = make_dict(tree)
         res_dict = delete_right_terminals(res_dict)
         trans_res = sorted(res_dict.items()).__str__()
-        exp_res = '[(\'A\', __a __c), (\'__a\', "a"), (\'__c\', \"c\")]'
-        self.assertEqual(trans_res, exp_res)
+        exp_res1 = '[(\'A\', UA UB), (\'UA\', \"a\"), (\'UB\', \"c\")]'
+        exp_res2 = '[(\'A\', UB UA), (\'UA\', \"c\"), (\'UB\', \"a\")]'
+        self.assertIn(trans_res, [exp_res1, exp_res2])
 
     def test_empty(self):
         inp = FileStream('empty_res_grammar.test')
@@ -105,24 +106,6 @@ class TestTransformer(unittest.TestCase):
         res_dict, _ = transform(res_dict, start_item, report)
         self.assertEqual(res_dict, dict())
         os.remove('cnf_steps_STRING.txt')
-
-    def test_transform(self):
-        inp = FileStream('corr_grammar.test')
-        report = Report()
-        lexer = MyGrammarLexer(inp)
-        stream = CommonTokenStream(lexer)
-        parser = MyGrammarParser(stream)
-        tree = parser.startRule()
-
-        start_item, res_dict = make_dict(tree)
-        res_dict, _ = transform(res_dict, start_item, report)
-        trans_res = sorted(res_dict.items()).__str__()
-        print(trans_res)
-        exp_res = '[(\'$1\', $1 LETTER | $2 _0), (\'$2\', \"n\"), ' \
-                  '(\'LETTER\', $2 _0), (\'_0\', $2 $2), ' \
-                  '(\'_START\', #e | LETTER $1 | $1 LETTER | $2 _0 | $2 _0)]'
-        self.assertEqual(trans_res, exp_res)
-        os.remove('cnf_steps_WORD.txt')
 
 
 if __name__ == '__main__':
