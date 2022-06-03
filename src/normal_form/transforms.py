@@ -373,7 +373,14 @@ def delete_epsilons(start_dict, start_name):
         return {start_name: new_rule}
     if start_name in eps_consist:
         new_eps = Epsilon()
-        res_dict[start_name].add(new_eps)
+        if res_dict[start_name].type() == 'OR':
+            res_dict[start_name].add(new_eps)
+        else:
+            new_or = ContextOr()
+            new_or.add(new_eps)
+            old_rule = res_dict[start_name]
+            new_or.add(old_rule)
+            res_dict[start_name] = new_or
 
     return res_dict
 
