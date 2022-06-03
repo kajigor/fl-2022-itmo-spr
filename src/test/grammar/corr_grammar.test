@@ -1,0 +1,19 @@
+//STRING: STRING
+STRING:
+STRING: (LETTERS|NUM)+
+//STRING: T{2,4}
+//STRING: E
+//E: M N|N
+//M:
+//M: "m"
+//N:
+//N:"n"
+//T: TRESH "a"
+LETTERS: "a".."z" | "A".."Z"|" "|"_"
+NUM: DIGIT+| NEGDIGIT | ZERO "0"
+ZERO: "0"
+NEGDIGIT: "-" DIGIT+
+DIGIT: "0".."9"//| "012"
+//TRESH: TRESH
+
+//X: "a"
